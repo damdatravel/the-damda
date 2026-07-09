@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function HomePage() {
   return (
@@ -64,19 +65,30 @@ export default function HomePage() {
                 실용적이고 지속 가능한 모델로 바꾸는 것. 그것이 더담다가 세상을 바라보는 방식입니다.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: '설립', value: '2026', sub: '인천 영종도' },
-                { label: '사업자', value: '475-81-03874', sub: '전자상거래' },
-                { label: '운영 서비스', value: '3개', sub: '담다트래블 · 여는날 · 스퀴즈빈' },
-                { label: '대표이사', value: '김봉근', sub: 'The Damda Inc.' },
-              ].map(item => (
-                <div key={item.label} className="bg-[#F8FAFB] rounded-2xl p-6">
-                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">{item.label}</p>
-                  <p className="text-[#0A0F1E] font-bold text-lg">{item.value}</p>
-                  <p className="text-gray-400 text-sm mt-1">{item.sub}</p>
-                </div>
-              ))}
+            <div className="flex flex-col gap-4">
+              <div className="relative w-full h-64 rounded-2xl overflow-hidden shadow-lg">
+                <Image
+                  src="/images/yeongjongdo.jpg"
+                  alt="인천 영종도 노을"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: '설립', value: '2026', sub: '인천 영종도' },
+                  { label: '사업자', value: '475-81-03874', sub: '전자상거래' },
+                  { label: '운영 서비스', value: '3개', sub: '담다트래블 · 여는날 · 스퀴즈빈' },
+                  { label: '대표이사', value: '김봉근', sub: 'The Damda Inc.' },
+                ].map(item => (
+                  <div key={item.label} className="bg-[#F8FAFB] rounded-2xl p-5">
+                    <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">{item.label}</p>
+                    <p className="text-[#0A0F1E] font-bold text-base">{item.value}</p>
+                    <p className="text-gray-400 text-xs mt-1">{item.sub}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
