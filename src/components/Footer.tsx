@@ -18,8 +18,8 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">서비스</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/squeeze-bin" className="hover:text-white transition-colors">스퀴즈빈 — 자원순환 솔루션</Link></li>
               <li><a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">담다트래블 — 공항 캐리어 배송</a></li>
+              <li><a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">여는날 — 영종도 데이트 스팟</a></li>
             </ul>
           </div>
 
@@ -46,9 +46,5 @@ export default function Footer() {
             <p>주식회사 더담다 | 대표이사 김봉근 | 사업자등록번호 475-81-03874</p>
             <p>인천광역시 영종구 영종대로162번길 20, 305호 (운서동, 스타힐스빌딩)</p>
           </div>
-          <p className="text-gray-600">© 2026 The Damda Co., Ltd. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-  )
-}
+          <p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p>
+        </d

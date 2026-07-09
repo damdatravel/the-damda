@@ -18,9 +18,12 @@ export default function Header() {
           <Link href="/" className="text-gray-300 hover:text-white text-sm transition-colors">
             홈
           </Link>
-          <Link href="/squeeze-bin" className="text-gray-300 hover:text-white text-sm transition-colors">
-            스퀴즈빈
-          </Link>
+          <a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white text-sm transition-colors">
+            담다트래블
+          </a>
+          <a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white text-sm transition-colors">
+            여는날
+          </a>
           <Link href="/contact" className="text-gray-300 hover:text-white text-sm transition-colors">
             문의
           </Link>
@@ -28,7 +31,7 @@ export default function Header() {
             href="/contact"
             className="bg-[#10E096] text-[#0A0F1E] text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#0DC47D] transition-colors"
           >
-            파트너십 문의
+            문의하기
           </Link>
         </nav>
 
@@ -50,11 +53,5 @@ export default function Header() {
       {open && (
         <div className="md:hidden bg-[#0A0F1E] border-t border-white/10 px-6 py-4 space-y-4">
           <Link href="/" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>홈</Link>
-          <Link href="/squeeze-bin" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>스퀴즈빈</Link>
-          <Link href="/contact" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>문의</Link>
-          <Link href="/contact" className="block bg-[#10E096] text-[#0A0F1E] text-sm font-semibold px-4 py-2 rounded-lg text-center" onClick={() => setOpen(false)}>파트너십 문의</Link>
-        </div>
-      )}
-    </header>
-  )
-}
+          <a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>담다트래블</a>
+          <a href="https://yeonunnal.com" target="_blank" rel="noopener noref
