@@ -32,8 +32,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/821086231653" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-                  WhatsApp +82 10-8623-1653
+                <a href="https://wa.me/821088231653" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  WhatsApp +82 10-8823-1653
                 </a>
               </li>
               <li><Link href="/contact" className="text-[#10E096] hover:text-[#0DC47D] transition-colors font-medium">파트너십 &amp; 투자 문의 →</Link></li>

@@ -64,16 +64,16 @@ export default function HomePage() {
                 물류, 자원순환, 라이프스타일 세 영역에서 현장의 문제를 기술과 서비스로 해결합니다.
               </p>
               <p className="text-gray-500 text-lg leading-relaxed">
-                대표이사 김봉근은 삼성물산·삼성서비스·YG-1 등에서 쌓은 현장 경험을 바탕으로,
-                실용적이고 지속 가능한 사업 모델을 만들어가고 있습니다.
+                일상 속에서 느낀 불편함을 사업의 시작점으로 삼아,
+                실용적이고 지속 가능한 모델로 바꾸는 것. 그것이 더담다가 세상을 바라보는 방식입니다.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: '설립', value: '2026', sub: '인천 영종도' },
                 { label: '사업자', value: '475-81-03874', sub: '전자상거래' },
-                { label: '운영 서비스', value: '2개', sub: '담다트래블 · 여는날' },
-                { label: '대표이사', value: '김봉근', sub: '삼성물산 출신' },
+                { label: '운영 서비스', value: '3개', sub: '담다트래블 · 여는날 · 스퀴즈빈' },
+                { label: '대표이사', value: '김봉근', sub: 'Damda Inc.' },
               ].map(item => (
                 <div key={item.label} className="bg-[#F8FAFB] rounded-2xl p-6">
                   <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">{item.label}</p>
@@ -133,7 +133,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* 담다트래블 */}
             <div className="group relative bg-[#F0FDF9] border border-green-100 rounded-3xl overflow-hidden p-10 hover:shadow-xl transition-all">
               <div className="absolute top-6 right-6">
@@ -204,6 +204,34 @@ export default function HomePage() {
                 </a>
               </div>
             </div>
+            {/* 스퀴즈빈 */}
+            <div className="group relative bg-[#F8FAFB] border border-gray-200 rounded-3xl overflow-hidden p-10 hover:shadow-xl transition-all">
+              <div className="absolute top-6 right-6">
+                <span className="text-xs bg-gray-200 text-gray-600 font-semibold px-3 py-1 rounded-full">추진 중</span>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-gray-200 flex items-center justify-center mb-6">
+                <svg className="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-[#0A0F1E] mb-2">스퀴즈빈</h3>
+              <p className="text-gray-400 text-sm font-semibold mb-4">Squeezebin · B2G 솔루션</p>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                일회용컵 잔여 액체를 자동 분리·압착하는 스마트 수거 장치.
+                컵 부피 90% 감량으로 지자체·공공기관의 자원순환을 혁신합니다.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-8">
+                {['B2G', '지자체', '공공장소', '특허 5건'].map(tag => (
+                  <span key={tag} className="text-xs bg-white text-gray-500 border border-gray-200 px-3 py-1 rounded-full">{tag}</span>
+                ))}
+              </div>
+              <span className="inline-flex items-center gap-2 text-gray-400 font-semibold text-sm">
+                출시 준비 중
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -242,7 +270,7 @@ export default function HomePage() {
                   </tr>
                   <tr>
                     <td className="py-3 pr-4 font-semibold text-gray-900">연락처</td>
-                    <td className="py-3">+82 10-8623-1653</td>
+                    <td className="py-3">+82 10-8823-1653</td>
                   </tr>
                 </tbody>
               </table>
