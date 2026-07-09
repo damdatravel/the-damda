@@ -210,4 +210,79 @@ export default function HomePage() {
 
       {/* LOCATION */}
       <section className="py-20 bg-[#F8FAFB]">
-        <div className="max-w-
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-3">Location</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">오시는 길</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-6">주식회사 더담다</h3>
+              <table className="w-full text-sm text-gray-600 border-collapse">
+                <tbody>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-3 pr-4 font-semibold text-gray-900 w-28">주소</td>
+                    <td className="py-3">인천광역시 영종구 영종대로162번길 20, 305호<br />(운서동, 스타힐스빌딩)</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-3 pr-4 font-semibold text-gray-900">대표이사</td>
+                    <td className="py-3">김봉근</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-3 pr-4 font-semibold text-gray-900">사업자번호</td>
+                    <td className="py-3">475-81-03874</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-3 pr-4 font-semibold text-gray-900">이메일</td>
+                    <td className="py-3">
+                      <a href="mailto:ceo@the-damda.co.kr" className="text-[#10E096] hover:underline">
+                        ceo@the-damda.co.kr
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 pr-4 font-semibold text-gray-900">연락처</td>
+                    <td className="py-3">+82 10-8623-1653</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-[#0A0F1E] rounded-2xl p-8 text-white">
+              <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">영종도</p>
+              <p className="text-2xl font-bold mb-3">인천국제공항 인근</p>
+              <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                공항을 중심으로 담다트래블 캐리어 배송 서비스와<br />
+                스마트 자원순환 솔루션을 운영하고 있습니다.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-block bg-[#10E096] text-[#0A0F1E] text-sm font-bold px-6 py-3 rounded-lg hover:bg-[#0DC47D] transition-colors"
+              >
+                파트너십 문의 →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 bg-[#0A0F1E]">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Contact</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
+            나와 같이 꾸며가 봅시다
+          </h2>
+          <p className="text-gray-400 text-lg mb-10">
+            B2G 지자체 파트너십, B2B 협력, 투자 문의 모두 환영합니다.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-block bg-[#10E096] text-[#0A0F1E] font-bold text-lg px-10 py-4 rounded-xl hover:bg-[#0DC47D] transition-colors"
+          >
+            문의하기
+          </Link>
+        </div>
+      </section>
+    </>
+  )
+}

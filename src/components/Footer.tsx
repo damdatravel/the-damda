@@ -36,7 +36,7 @@ export default function Footer() {
                   WhatsApp +82 10-8623-1653
                 </a>
               </li>
-              <li><Link href="/contact" className="text-[#10E096] hover:text-[#0DC47D] transition-colors font-medium">파트너십 & 투자 문의 →</Link></li>
+              <li><Link href="/contact" className="text-[#10E096] hover:text-[#0DC47D] transition-colors font-medium">파트너십 &amp; 투자 문의 →</Link></li>
             </ul>
           </div>
         </div>
@@ -47,4 +47,8 @@ export default function Footer() {
             <p>인천광역시 영종구 영종대로162번길 20, 305호 (운서동, 스타힐스빌딩)</p>
           </div>
           <p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p>
-        </d
+        </div>
+      </div>
+    </footer>
+  )
+}

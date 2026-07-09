@@ -54,4 +54,11 @@ export default function Header() {
         <div className="md:hidden bg-[#0A0F1E] border-t border-white/10 px-6 py-4 space-y-4">
           <Link href="/" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>홈</Link>
           <a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>담다트래블</a>
-          <a href="https://yeonunnal.com" target="_blank" rel="noopener noref
+          <a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>여는날</a>
+          <Link href="/contact" className="block text-gray-300 hover:text-white text-sm" onClick={() => setOpen(false)}>문의</Link>
+          <Link href="/contact" className="block bg-[#10E096] text-[#0A0F1E] text-sm font-semibold px-4 py-2 rounded-lg text-center" onClick={() => setOpen(false)}>문의하기</Link>
+        </div>
+      )}
+    </header>
+  )
+}
