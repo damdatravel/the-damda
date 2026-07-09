@@ -13,7 +13,7 @@ export default function ContactPage() {
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Contact</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-            함께 시작해 봅시다.
+            함께 합시다.
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed">
             B2G 시범 사업, B2B 파트너십, 투자 제안 모두 환영합니다.<br />
@@ -78,12 +78,12 @@ export default function ContactPage() {
                 <div>
                   <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">WhatsApp</p>
                   <a
-                    href="https://wa.me/821086231653"
+                    href="https://wa.me/821088231653"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-white font-semibold text-lg hover:text-[#10E096] transition-colors"
                   >
-                    +82 10-8623-1653
+                    +82 10-8823-1653
                   </a>
                 </div>
                 <div>
@@ -123,14 +123,12 @@ export default function ContactPage() {
               <div className="mt-8 p-5 bg-white rounded-2xl border border-green-200">
                 <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">관련 사이트</p>
                 <a
-                  href="https://www.damdatravel.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/squeeze-bin"
                   className="text-[#0DC47D] font-semibold text-sm hover:underline"
                 >
-                  www.damdatravel.com →
+                  스퀴즈빈 소개 페이지 →
                 </a>
-                <p className="text-gray-400 text-xs mt-1">공항 캐리어 배송 서비스</p>
+                <p className="text-gray-400 text-xs mt-1">일회용컵 자원순환 솔루션 · B2G</p>
               </div>
             </div>
           </div>

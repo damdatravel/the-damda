@@ -24,7 +24,7 @@ export default function HomePage() {
               <span className="text-[#10E096]">사업으로 바꿉니다.</span>
             </h1>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-10 max-w-xl">
-              더담다는 현장에서 발견한 문제를 기술과 서비스로 해결하는
+              주식회사 더담다는 현장에서 발견한 문제를 기술과 서비스로 해결하는
               스마트 솔루션 기업입니다.
             </p>
             <div className="flex flex-wrap gap-4">
@@ -44,10 +44,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-500">
-          <span className="text-xs tracking-widest uppercase">Scroll</span>
-          <div className="w-px h-10 bg-gradient-to-b from-gray-500 to-transparent" />
-        </div>
       </section>
 
       {/* ABOUT */}
@@ -73,7 +69,7 @@ export default function HomePage() {
                 { label: '설립', value: '2026', sub: '인천 영종도' },
                 { label: '사업자', value: '475-81-03874', sub: '전자상거래' },
                 { label: '운영 서비스', value: '3개', sub: '담다트래블 · 여는날 · 스퀴즈빈' },
-                { label: '대표이사', value: '김봉근', sub: 'Damda Inc.' },
+                { label: '대표이사', value: '김봉근', sub: 'The Damda Inc.' },
               ].map(item => (
                 <div key={item.label} className="bg-[#F8FAFB] rounded-2xl p-6">
                   <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">{item.label}</p>
@@ -276,11 +272,11 @@ export default function HomePage() {
               </table>
             </div>
             <div className="bg-[#0A0F1E] rounded-2xl p-8 text-white">
-              <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">영종도</p>
-              <p className="text-2xl font-bold mb-3">인천국제공항 인근</p>
+              <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">인천 영종도</p>
+              <p className="text-2xl font-bold mb-3">인천 영종도 기반 기업</p>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                공항을 중심으로 담다트래블 캐리어 배송 서비스와<br />
-                스마트 자원순환 솔루션을 운영하고 있습니다.
+                담다트래블 캐리어 배송, 여는날 웨딩·이벤트,<br />
+                스퀴즈빈 자원순환 솔루션을 운영·추진 중입니다.
               </p>
               <Link
                 href="/contact"
@@ -298,7 +294,7 @@ export default function HomePage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Contact</p>
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-            나와 같이 꾸며가 봅시다
+            우리 함께 만들어 갑시다
           </h2>
           <p className="text-gray-400 text-lg mb-10">
             B2G 지자체 파트너십, B2B 협력, 투자 문의 모두 환영합니다.
