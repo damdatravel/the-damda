@@ -1,9 +1,46 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import type { Metadata } from 'next'
+
+
+
+export const metadata = {
+  alternates: { canonical: 'https://the-damda.co.kr' },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: '주식회사 더담다',
+  alternateName: 'The Damda Inc.',
+  url: 'https://the-damda.co.kr',
+  logo: 'https://the-damda.co.kr/images/yeongjongdo.jpg',
+  description: '일상의 불편함을 사업으로 바꾸는 스마트 솔루션 기업',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '영종대로162번길 20, 305호',
+    addressLocality: '인천광역시 영종구',
+    addressCountry: 'KR',
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+82-10-8823-1653',
+    contactType: 'customer service',
+    availableLanguage: '한국어',
+  },
+  sameAs: [
+    'https://www.damdatravel.com',
+    'https://yeonunnal.com',
+  ],
+}
 
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* HERO */}
       <section className="min-h-screen bg-[#0A0F1E] flex items-center relative overflow-hidden">
         <div
