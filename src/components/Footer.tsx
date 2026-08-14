@@ -44,7 +44,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-start gap-4 text-xs">
           <div className="space-y-1">
-            <p>주식회사 더담다 | 대표이사 김봉근 | 사업자등록번호 475-81-03874</p>
+            <p>주식회사 더담다 | 대표이사 김봉근 | 사업자등록번호 475-81-03874 | 통신판매업신고 제2026-영종구-0028호</p>
             <p>인천광역시 영종구 영종대로162번길 20, 305호 (운서동, 스타힐스빌딩)</p>
           </div>
           <p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p>
