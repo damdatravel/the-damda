@@ -24,7 +24,7 @@ const jsonLd = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+82-10-8823-1653',
+    telephone: '+82-10-3662-5969',
     contactType: 'customer service',
     availableLanguage: '한국어',
   },
@@ -353,7 +353,7 @@ export default function HomePage() {
                   </tr>
                   <tr>
                     <td className="py-3 pr-4 font-semibold text-gray-900">연락처</td>
-                    <td className="py-3">+82 10-8823-1653</td>
+                    <td className="py-3">010-3662-5969</td>
                   </tr>
                 </tbody>
               </table>
