@@ -15,7 +15,7 @@ const jsonLd = {
   alternateName: 'The Damda Inc.',
   url: 'https://the-damda.co.kr',
   logo: 'https://the-damda.co.kr/images/yeongjongdo.jpg',
-  description: '시간을 가지고 사업하는 솔루션 기업 — 삶의 빛나는 순간, 여행의 자유, 지구의 내일을 더담다가 깊이 간직합니다.',
+  description: '사람의 시간을 담아 가치를 만드는 솔루션 기업 — 더담다의 모든 사업은 하나의 질문에서 시작합니다.',
   address: {
     '@type': 'PostalAddress',
     streetAddress: '영종대로162번길 20, 305호',
@@ -54,16 +54,19 @@ export default function HomePage() {
 
         <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-24">
           <div className="max-w-3xl">
-            <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-6">
+            <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-8">
               The Damda Inc. · 주식회사 더담다
             </p>
+            <p className="text-gray-400 text-xl md:text-2xl font-medium leading-snug mb-6">
+              사람의 시간을 어떻게<br />
+              더 가치 있게 만들 것인가?
+            </p>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
-              단 한 번의<br />
-              <span className="text-[#10E096]">순간을 완성합니다.</span>
+              Time을 담아<br />
+              <span className="text-[#10E096]">Value를 만든다</span>
             </h1>
-            <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-10 max-w-xl">
-              삶의 빛나는 순간, 여행의 자유, 지구의 내일 —<br />
-              더담다가 깊이 간직합니다.
+            <p className="text-gray-400 text-lg leading-relaxed mb-10 max-w-xl">
+              더담다의 모든 사업은 이 질문에서 시작합니다.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
