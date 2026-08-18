@@ -92,9 +92,6 @@ export default function Header() {
           <Link href="/faq" className="text-gray-300 hover:text-white text-sm transition-colors">
             Q&A
           </Link>
-          <Link href="/contact" className="text-gray-300 hover:text-white text-sm transition-colors">
-            문의
-          </Link>
         </nav>
 
         {/* 모바일 햄버거 */}
@@ -146,7 +143,6 @@ export default function Header() {
           </div>
 
           <Link href="/faq" className="block text-gray-300 hover:text-white text-sm py-2" onClick={() => setOpen(false)}>Q&A</Link>
-          <Link href="/contact" className="block text-gray-300 hover:text-white text-sm py-2" onClick={() => setOpen(false)}>문의</Link>
         </div>
       )}
     </header>
