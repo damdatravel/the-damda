@@ -15,7 +15,7 @@ const jsonLd = {
   alternateName: 'The Damda Inc.',
   url: 'https://the-damda.co.kr',
   logo: 'https://the-damda.co.kr/images/yeongjongdo.jpg',
-  description: '다시 돌아오지 않을 순간을 지키는 기업 — 결혼의 하루, 여행의 첫걸음, 지구의 내일 곁에 더담다가 있습니다.',
+  description: '시간을 가지고 사업하는 솔루션 기업 — 삶의 빛나는 순간, 여행의 자유, 지구의 내일을 더담다가 깊이 간직합니다.',
   address: {
     '@type': 'PostalAddress',
     streetAddress: '영종대로162번길 20, 305호',
@@ -58,12 +58,12 @@ export default function HomePage() {
               Damda Inc. · 주식회사 더담다
             </p>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
-              다시 돌아오지 않을<br />
-              <span className="text-[#10E096]">순간을 지킵니다.</span>
+              단 한 번의<br />
+              <span className="text-[#10E096]">순간을 완성합니다.</span>
             </h1>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-10 max-w-xl">
-              결혼의 하루, 여행의 첫걸음, 지구의 내일 —<br />
-              더담다가 그 시간 곁에 있습니다.
+              삶의 빛나는 순간, 여행의 자유, 지구의 내일 —<br />
+              더담다가 깊이 간직합니다.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
@@ -91,15 +91,15 @@ export default function HomePage() {
             <div>
               <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">About Us</p>
               <h2 className="text-4xl font-extrabold text-[#0A0F1E] mb-6 leading-tight">
-                남들이 외면한 문제를,<br />기술로 해결합니다.
+                시간을 가지고<br />사업하는 기업입니다.
               </h2>
               <p className="text-gray-500 text-lg leading-relaxed mb-6">
-                주식회사 더담다(Damda Inc.)는 인천 영종도를 기반으로 설립된 스마트 솔루션 기업입니다.
-                물류, 자원순환, 라이프스타일 세 영역에서 현장의 문제를 기술과 서비스로 해결합니다.
+                주식회사 더담다(Damda Inc.)는 인천 영종도를 기반으로 설립된 솔루션 기업입니다.
+                인간의 시간과 지구 환경의 시간, 그 소중한 가치를 사업으로 만듭니다.
               </p>
               <p className="text-gray-500 text-lg leading-relaxed">
-                일상 속에서 느낀 불편함을 사업의 시작점으로 삼아,
-                실용적이고 지속 가능한 모델로 바꾸는 것. 그것이 주식회사 더담다가 세상을 바라보는 방식입니다.
+                일생의 빛나는 순간을 완성하고, 한국 여행의 처음부터 끝을 함께하며,
+                지구가 숨 쉬는 시간을 늘립니다. 더담다가 파는 것은 제품이나 서비스가 아닌, 당신의 시간입니다.
               </p>
             </div>
             <div className="flex flex-col gap-4">
