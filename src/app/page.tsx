@@ -55,7 +55,7 @@ export default function HomePage() {
         <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-24">
           <div className="max-w-3xl">
             <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-6">
-              Damda Inc. · 주식회사 더담다
+              The Damda Inc. · 주식회사 더담다
             </p>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
               단 한 번의<br />
@@ -94,7 +94,7 @@ export default function HomePage() {
                 시간을 가지고<br />사업하는 기업입니다.
               </h2>
               <p className="text-gray-500 text-lg leading-relaxed mb-6">
-                주식회사 더담다(Damda Inc.)는 인천 영종도를 기반으로 설립된 솔루션 기업입니다.
+                주식회사 더담다(The Damda Inc.)는 인천 영종도를 기반으로 설립된 솔루션 기업입니다.
                 인간의 시간과 지구 환경의 시간, 그 소중한 가치를 사업으로 만듭니다.
               </p>
               <p className="text-gray-500 text-lg leading-relaxed">
