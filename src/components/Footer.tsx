@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import DamdaLogo from './DamdaLogo'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -7,7 +7,13 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div>
-            <DamdaLogo id="ftr" symbolSize={38} large />
+            <Image
+              src="/damda-logo.png"
+              alt="THE DAMDA"
+              width={220}
+              height={62}
+              className="h-14 w-auto"
+            />
             <p className="text-sm leading-relaxed mt-6">
               사람의 시간을 담아<br />
               가치를 만드는 솔루션 기업.

@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
-import DamdaLogo from './DamdaLogo'
 
 const services = [
   { label: '여는날', href: 'https://yeonunnal.com', external: true },
@@ -15,7 +15,6 @@ export default function Header() {
   const [dropOpen, setDropOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
 
-  // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
@@ -29,8 +28,17 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0F1E]/90 backdrop-blur-md border-b border-white/10">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+
+        {/* 로고 */}
         <Link href="/" className="flex items-center">
-          <DamdaLogo id="hdr" symbolSize={30} />
+          <Image
+            src="/damda-logo.png"
+            alt="THE DAMDA"
+            width={180}
+            height={50}
+            className="h-10 w-auto"
+            priority
+          />
         </Link>
 
         {/* 데스크탑 네비 */}
@@ -39,7 +47,7 @@ export default function Header() {
             홈
           </Link>
 
-          {/* 사업소개 드롭다운 — 클릭 토글 */}
+          {/* 사업소개 드롭다운 */}
           <div className="relative" ref={dropRef}>
             <button
               onClick={() => setDropOpen(prev => !prev)}
