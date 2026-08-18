@@ -76,14 +76,12 @@ export default function ContactPage() {
                   </a>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">WhatsApp</p>
+                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">연락처</p>
                   <a
-                    href="https://wa.me/821088231653"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="tel:01036625969"
                     className="text-white font-semibold text-lg hover:text-[#10E096] transition-colors"
                   >
-                    +82 10-8823-1653
+                    010-3662-5969
                   </a>
                 </div>
                 <div>
