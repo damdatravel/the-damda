@@ -337,6 +337,7 @@ export default function HomePage() {
                   width={220}
                   height={62}
                   className="h-14 w-auto"
+                  style={{ mixBlendMode: 'multiply' }}
                 />
               </div>
               <table className="w-full text-sm text-gray-600 border-collapse">
