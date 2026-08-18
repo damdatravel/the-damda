@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const services = [
   { label: '여는날', href: 'https://yeonunnal.com', external: true },
@@ -12,6 +12,18 @@ const services = [
 export default function Header() {
   const [open, setOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
+  const dropRef = useRef<HTMLDivElement>(null)
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
+        setDropOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0F1E]/90 backdrop-blur-md border-b border-white/10">
@@ -28,16 +40,15 @@ export default function Header() {
             홈
           </Link>
 
-          {/* 사업소개 드롭다운 */}
-          <div
-            className="relative"
-            onMouseEnter={() => setDropOpen(true)}
-            onMouseLeave={() => setDropOpen(false)}
-          >
-            <button className="flex items-center gap-1 text-gray-300 hover:text-white text-sm transition-colors">
+          {/* 사업소개 드롭다운 — 클릭 토글 */}
+          <div className="relative" ref={dropRef}>
+            <button
+              onClick={() => setDropOpen(prev => !prev)}
+              className="flex items-center gap-1 text-gray-300 hover:text-white text-sm transition-colors"
+            >
               사업소개
               <svg
-                className={`w-3 h-3 transition-transform ${dropOpen ? 'rotate-180' : ''}`}
+                className={`w-3 h-3 transition-transform duration-200 ${dropOpen ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -47,7 +58,7 @@ export default function Header() {
             </button>
 
             {dropOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#0A0F1E] border border-white/10 rounded-xl shadow-xl overflow-hidden">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48 bg-[#0A0F1E] border border-white/10 rounded-xl shadow-xl overflow-hidden">
                 {services.map(s =>
                   s.external ? (
                     <a
@@ -55,10 +66,11 @@ export default function Header() {
                       href={s.href}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => setDropOpen(false)}
                       className="flex items-center justify-between px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
                     >
                       {s.label}
-                      <svg className="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
@@ -66,6 +78,7 @@ export default function Header() {
                     <Link
                       key={s.label}
                       href={s.href}
+                      onClick={() => setDropOpen(false)}
                       className="block px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
                     >
                       {s.label}
