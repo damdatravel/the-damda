@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import DamdaLogo from './DamdaLogo'
 
 export default function Footer() {
   return (
@@ -6,12 +7,10 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div>
-            <div className="text-white font-bold text-xl mb-3">
-              THE <span className="text-[#10E096]">DAMDA</span>
-            </div>
-            <p className="text-sm leading-relaxed">
-              스마트 자원순환과 물류 혁신으로<br />
-              더 나은 도시 환경을 만듭니다.
+            <DamdaLogo id="ftr" symbolSize={38} large />
+            <p className="text-sm leading-relaxed mt-6">
+              사람의 시간을 담아<br />
+              가치를 만드는 솔루션 기업.
             </p>
           </div>
 
@@ -19,7 +18,7 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">서비스</h4>
             <ul className="space-y-2 text-sm">
               <li><a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">담다트래블 — 공항 캐리어 배송</a></li>
-              <li><a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">여는날 — 웨딩 & 이벤트</a></li>
+              <li><a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">여는날 — 웨딩 &amp; 이벤트</a></li>
               <li><a href="/squeeze-bin" className="hover:text-white transition-colors">스퀴즈빈 — 스마트 자원순환</a></li>
             </ul>
           </div>

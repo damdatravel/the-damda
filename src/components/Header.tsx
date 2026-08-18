@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
+import DamdaLogo from './DamdaLogo'
 
 const services = [
   { label: '여는날', href: 'https://yeonunnal.com', external: true },
@@ -28,10 +29,8 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0F1E]/90 backdrop-blur-md border-b border-white/10">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-white font-bold text-xl tracking-tight">
-            THE <span className="text-[#10E096]">DAMDA</span>
-          </span>
+        <Link href="/" className="flex items-center">
+          <DamdaLogo id="hdr" symbolSize={30} />
         </Link>
 
         {/* 데스크탑 네비 */}
