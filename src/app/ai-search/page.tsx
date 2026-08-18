@@ -27,8 +27,6 @@ const targets = [
     category: '분양 현장',
     sub: '지식산업센터 · 아파트 · 오피스텔',
     desc: '투자자·실수요자가 ChatGPT, Perplexity, 구글 AI에 현장을 검색할 때 최상단 추천을 선점합니다.',
-    price: '현장당 1,000만 원',
-    type: '일시불 통계약',
     badge: 'B2B',
   },
   {
@@ -36,26 +34,20 @@ const targets = [
     category: '병원',
     sub: '성형외과 · 치과 · 피부과',
     desc: '진료과목별 주요 질문 및 수술 후기 검색 시 AI 추천 1순위에 노출되어 신규 환자를 유입합니다.',
-    price: '구축 200~300만 원 + 월 100~150만 원',
-    type: '구독형',
-    badge: '구독',
+    badge: '구독형',
   },
   {
     icon: '⚖️',
     category: '전문직',
     sub: '변호사 · 세무사 · 변리사',
     desc: '고단가 수임 사건 관련 전문성 검증 및 법률·세무 AI 질문 답변을 선점하여 수임률을 높입니다.',
-    price: '구축 200만 원 + 월 100만 원',
-    type: '구독형',
-    badge: '구독',
+    badge: '구독형',
   },
   {
     icon: '🏭',
     category: '기업 · 브랜드',
     sub: '대기업 · FMCG · 신제품 런칭',
     desc: '신제품 런칭, 제품 효능, 브랜드 연관 질문에 대한 AI 추천 1순위를 선점합니다.',
-    price: '프로젝트당 1,500만~3,000만 원',
-    type: '프로젝트',
     badge: 'Enterprise',
   },
 ]
@@ -236,8 +228,15 @@ export default function AiSearchPage() {
                 <p className="text-[#0DC47D] text-sm font-semibold mb-4">{item.sub}</p>
                 <p className="text-gray-600 leading-relaxed mb-6">{item.desc}</p>
                 <div className="border-t border-gray-200 pt-5">
-                  <p className="text-[#0A0F1E] font-bold text-lg">{item.price}</p>
-                  <p className="text-gray-400 text-sm mt-1">{item.type}</p>
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center gap-2 text-[#0DC47D] font-semibold hover:gap-4 transition-all"
+                  >
+                    도입 문의하기
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -256,8 +255,8 @@ export default function AiSearchPage() {
             AI 시대, 먼저 선점하세요
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            계약금 50% + 오픈 전 잔금 50% 완납 방식으로<br />
-            미수금 리스크 없이 진행됩니다.
+            업종과 규모에 맞는 맞춤 제안을 드립니다.<br />
+            부담 없이 문의해 주세요.
           </p>
           <Link
             href="/contact"
