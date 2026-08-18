@@ -330,7 +330,15 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
             <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-6">주식회사 더담다</h3>
+              <div className="mb-6">
+                <Image
+                  src="/damda-logo1.png"
+                  alt="THE DAMDA"
+                  width={220}
+                  height={62}
+                  className="h-14 w-auto"
+                />
+              </div>
               <table className="w-full text-sm text-gray-600 border-collapse">
                 <tbody>
                   <tr className="border-b border-gray-200">
