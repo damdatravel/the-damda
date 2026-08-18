@@ -178,7 +178,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* 담다트래블 */}
             <div className="group relative bg-[#F0FDF9] border border-green-100 rounded-3xl overflow-hidden p-10 hover:shadow-xl transition-all">
               <div className="absolute top-6 right-6">
@@ -279,6 +279,41 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
+            </div>
+
+            {/* AI 검색 최적화 */}
+            <div className="group relative bg-[#0A0F1E] rounded-3xl overflow-hidden p-10 hover:shadow-xl transition-all">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#10E096]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute top-6 right-6">
+                <span className="text-xs bg-[#10E096]/20 text-[#10E096] font-semibold px-3 py-1 rounded-full">NEW</span>
+              </div>
+              <div className="relative">
+                <div className="w-14 h-14 rounded-2xl bg-[#10E096]/20 flex items-center justify-center mb-6">
+                  <svg className="w-7 h-7 text-[#10E096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">AI 검색 최적화</h3>
+                <p className="text-[#10E096] text-sm font-semibold mb-4">AEO · GEO · SEO 대행</p>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                  ChatGPT · Perplexity · 구글 AI가 당신의 브랜드를 먼저 추천하도록.
+                  AI 시대의 검색 기술 인프라를 구축해 드립니다.
+                </p>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {['분양현장', '병원', '전문직', '기업브랜드'].map(tag => (
+                    <span key={tag} className="text-xs bg-white/10 text-gray-300 px-3 py-1 rounded-full">{tag}</span>
+                  ))}
+                </div>
+                <Link
+                  href="/ai-search"
+                  className="inline-flex items-center gap-2 text-[#10E096] font-semibold group-hover:gap-4 transition-all"
+                >
+                  서비스 소개
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
