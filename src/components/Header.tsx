@@ -95,12 +95,6 @@ export default function Header() {
           <Link href="/contact" className="text-gray-300 hover:text-white text-sm transition-colors">
             문의
           </Link>
-          <Link
-            href="/contact"
-            className="bg-[#10E096] text-[#0A0F1E] text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#0DC47D] transition-colors"
-          >
-            문의하기
-          </Link>
         </nav>
 
         {/* 모바일 햄버거 */}
@@ -153,7 +147,6 @@ export default function Header() {
 
           <Link href="/faq" className="block text-gray-300 hover:text-white text-sm py-2" onClick={() => setOpen(false)}>Q&A</Link>
           <Link href="/contact" className="block text-gray-300 hover:text-white text-sm py-2" onClick={() => setOpen(false)}>문의</Link>
-          <Link href="/contact" className="block bg-[#10E096] text-[#0A0F1E] text-sm font-semibold px-4 py-2 rounded-lg text-center mt-2" onClick={() => setOpen(false)}>문의하기</Link>
         </div>
       )}
     </header>

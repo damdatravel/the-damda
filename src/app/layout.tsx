@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import FloatingContactButton from '@/components/FloatingContactButton'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://the-damda.co.kr'),
@@ -56,6 +57,7 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
+        <FloatingContactButton />
       </body>
     </html>
   )
