@@ -15,7 +15,7 @@ const jsonLd = {
   alternateName: 'The Damda Inc.',
   url: 'https://the-damda.co.kr',
   logo: 'https://the-damda.co.kr/images/yeongjongdo.jpg',
-  description: '일상의 불편함을 사업으로 바꾸는 스마트 솔루션 기업',
+  description: '다시 돌아오지 않을 순간을 지키는 기업 — 결혼의 하루, 여행의 첫걸음, 지구의 내일 곁에 더담다가 있습니다.',
   address: {
     '@type': 'PostalAddress',
     streetAddress: '영종대로162번길 20, 305호',
@@ -58,12 +58,12 @@ export default function HomePage() {
               Damda Inc. · 주식회사 더담다
             </p>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
-              일상의 불편함을<br />
-              <span className="text-[#10E096]">사업으로 바꿉니다.</span>
+              다시 돌아오지 않을<br />
+              <span className="text-[#10E096]">순간을 지킵니다.</span>
             </h1>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-10 max-w-xl">
-              일상의 불편함이 곧 기회이자 가능성이며,
-              주식회사 더담다는 사업과 미래로 바꿉니다.
+              결혼의 하루, 여행의 첫걸음, 지구의 내일 —<br />
+              더담다가 그 시간 곁에 있습니다.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
