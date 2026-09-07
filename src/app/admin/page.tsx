@@ -28,6 +28,11 @@ type Booking = {
   price: number
   status: string
   driver_name?: string
+  pickup_photo_url?: string | null
+  arrival_photo_url?: string | null
+  luggage_photo_url?: string | null
+  hotel_guest_name?: string | null
+  memo?: string | null
 }
 
 type ChatRoom = {
@@ -535,8 +540,9 @@ export default function AdminPage() {
                   {roomMessages.map(msg => {
                     const isMine = msg.sender_type === 'admin'
                     const text = msg.original_text
-                    const displayText = text.startsWith('[img]') ? '📷 이미지' :
-                      text.startsWith('[location]') ? '📍 위치 공유' : text
+                    const isImg = text.startsWith('[img]')
+                    const isLoc = text.startsWith('[location]')
+                    const imgUrl = isImg ? text.slice(5) : null
                     return (
                       <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} items-end gap-1`}>
                         {!isMine && (
@@ -550,7 +556,18 @@ export default function AdminPage() {
                         <div className={`max-w-[65%] rounded-2xl px-3 py-2 text-sm ${
                           isMine ? 'bg-[#1A2B4A] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                         }`}>
-                          <p>{displayText}</p>
+                          {isImg && imgUrl ? (
+                            <a href={imgUrl} target="_blank" rel="noopener noreferrer">
+                              <img
+                                src={imgUrl}
+                                alt="이미지"
+                                style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '8px', display: 'block', cursor: 'pointer' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display='none'; (e.target as HTMLImageElement).insertAdjacentHTML('afterend','<p>📷 이미지 (미리보기 불가)</p>') }}
+                              />
+                            </a>
+                          ) : (
+                            <p>{isLoc ? '📍 위치 공유' : text}</p>
+                          )}
                           <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-gray-400'}`}>
                             {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
@@ -600,12 +617,51 @@ export default function AdminPage() {
                       style={{ backgroundColor: sc.bg, color: sc.text }}>{b.status}</span>
                   </div>
                   <p>👤 {b.guest_name} · {b.guest_phone}</p>
+                  {b.hotel_guest_name && (
+                    <p className="bg-yellow-50 text-yellow-800 font-semibold px-2 py-1 rounded-lg">
+                      🏨 호텔예약자: {b.hotel_guest_name}
+                    </p>
+                  )}
                   <p>📍 {b.origin}</p>
                   <p>🏁 {b.destination}</p>
                   <p>📅 {b.pickup_date} {b.pickup_time}</p>
                   <p>🧳 캐리어 {b.bag_count}개</p>
                   <p>💰 {(b.price ?? 0).toLocaleString()}원</p>
                   {b.driver_name && <p>🚗 배차기사: {b.driver_name}</p>}
+                  {b.memo && <p className="text-gray-500">📝 {b.memo}</p>}
+
+                  {/* 사진 */}
+                  {(b.luggage_photo_url || b.pickup_photo_url || b.arrival_photo_url) && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 mb-2">📷 인증 사진</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {b.luggage_photo_url && (
+                          <a href={b.luggage_photo_url} target="_blank" rel="noopener noreferrer" className="block">
+                            <div className="text-center">
+                              <img src={b.luggage_photo_url} alt="짐 사진" className="w-24 h-24 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition" />
+                              <p className="text-xs text-gray-400 mt-1">짐 사진</p>
+                            </div>
+                          </a>
+                        )}
+                        {b.pickup_photo_url && (
+                          <a href={b.pickup_photo_url} target="_blank" rel="noopener noreferrer" className="block">
+                            <div className="text-center">
+                              <img src={b.pickup_photo_url} alt="수거 사진" className="w-24 h-24 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition" />
+                              <p className="text-xs text-gray-400 mt-1">수거 사진</p>
+                            </div>
+                          </a>
+                        )}
+                        {b.arrival_photo_url && (
+                          <a href={b.arrival_photo_url} target="_blank" rel="noopener noreferrer" className="block">
+                            <div className="text-center">
+                              <img src={b.arrival_photo_url} alt="배송완료 사진" className="w-24 h-24 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition" />
+                              <p className="text-xs text-gray-400 mt-1">배송완료</p>
+                            </div>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })()}
