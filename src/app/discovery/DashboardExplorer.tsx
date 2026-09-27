@@ -3,11 +3,12 @@ import {useEffect,useState} from 'react'
 import ActivityCalendar,{type CalendarMeasurement} from './ActivityCalendar'
 
 type Benchmark={id:number;question:string}
-type Props={measurements:CalendarMeasurement[];benchmarks:Benchmark[]}
+type WorkTask={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
+type Props={measurements:CalendarMeasurement[];benchmarks:Benchmark[];tasks:WorkTask[]}
 function shortChannel(c:string){return c==='Google Search'?'Google':c==='Naver Search'?'Naver':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI Web':c}
 function when(iso:string){return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}
 
-export default function DashboardExplorer({measurements,benchmarks}:Props){
+export default function DashboardExplorer({measurements,benchmarks,tasks}:Props){
  const[selected,setSelected]=useState<CalendarMeasurement|null>(null)
  const[list,setList]=useState<{title:string;items:CalendarMeasurement[]}|null>(null)
  const[showBenchmarks,setShowBenchmarks]=useState(false)
@@ -25,7 +26,7 @@ export default function DashboardExplorer({measurements,benchmarks}:Props){
    <Stat label="검토 대기" value={reviewCount} note={reviewCount?`승인·수정·보류할 개선안 ${reviewCount}건`:"현재 대기 작업이 없습니다."}/>
   </section>
   <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-   <ActivityCalendar measurements={measurements}/>
+   <ActivityCalendar measurements={measurements} tasks={tasks}/>
    <div className="space-y-6">
     <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6"><h2 className="text-xl font-bold">채널 현황</h2><p className="mt-1 text-xs text-gray-400">채널을 누르면 해당 채널의 전체 측정 이력을 확인할 수 있습니다.</p><div className="mt-5 space-y-2">{channels.map(c=><button key={c.name} onClick={()=>c.items.length&&openList(shortChannel(c.name)+' 측정 이력',c.items)} className="flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-left hover:bg-emerald-50 disabled:cursor-default" disabled={!c.items.length}><span className="font-semibold">{shortChannel(c.name)}</span><span className="text-sm text-gray-500">{c.items.length?`측정 ${c.items.length} · 발견 ${c.found}/${c.items.length}`:'측정 전'}</span></button>)}</div></section>
     <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6"><h2 className="text-xl font-bold">최근 작업</h2>{measurements.length?<div className="mt-5 space-y-2">{measurements.slice(0,6).map(m=><button key={m.id} onClick={()=>setSelected(m)} className="block w-full rounded-xl bg-gray-50 p-3 text-left text-sm hover:bg-emerald-50"><span className="font-bold">{shortChannel(m.channel)}</span><span className="ml-2 text-gray-500">{m.measurement_round??'측정'} · {m.is_discovered?'발견':'미발견'}</span><div className="mt-1 line-clamp-1 text-xs text-gray-500">{m.question||`질문 ID ${m.question_id}`}</div><div className="mt-1 text-xs text-gray-400">{when(m.created_at)}</div></button>)}</div>:<div className="mt-5 rounded-xl border border-dashed border-gray-300 p-5 text-center"><p className="text-sm font-semibold text-gray-500">작업 기록 0건</p></div>}</section>
