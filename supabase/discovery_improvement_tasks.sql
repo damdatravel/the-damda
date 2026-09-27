@@ -34,3 +34,33 @@ values (
 )
 on conflict(project_id,priority) do update set
  title=excluded.title,status=excluded.status,summary=excluded.summary,work_details=excluded.work_details,completed_at=excluded.completed_at,updated_at=now();
+
+-- V0.2: machine-checkable completion criteria
+alter table public.discovery_improvement_tasks
+  add column if not exists completion_criteria jsonb not null default '[]'::jsonb,
+  add column if not exists verification_result jsonb,
+  add column if not exists verified_at timestamptz;
+
+insert into public.discovery_improvement_tasks(project_id,priority,title,status,summary,work_details,completion_criteria)
+values (
+  1,2,'검색 유입이 거의 없을 때 점검할 것 가이드 페이지','in_progress',
+  '검색 유입이 적거나 줄었을 때 확인할 기본 항목을 공개 가이드로 제작하고 기술 조건을 검증합니다.',
+  array[
+    '/guide/search-traffic-checklist 신규 페이지 제작',
+    '검색 유입 감소 원인을 단일 원인으로 단정하지 않는 점검 가이드 구성',
+    'sitemap에 가이드 URL 추가',
+    '/ai-search에서 가이드로 연결되는 내부 링크 추가'
+  ],
+  '[
+    {"key":"page","label":"가이드 페이지가 정상 응답"},
+    {"key":"metadata","label":"title과 description 존재"},
+    {"key":"sitemap","label":"sitemap에 가이드 URL 포함"},
+    {"key":"robots","label":"robots.txt에서 가이드 차단 없음"},
+    {"key":"internalLink","label":"검색·AI 발견 관리 페이지에서 내부 링크 연결"},
+    {"key":"serviceLink","label":"가이드에서 검색·AI 발견 관리 서비스로 연결"},
+    {"key":"safeCopy","label":"검색 순위·AI 추천 노출 보장 표현 없음"}
+  ]'::jsonb
+)
+on conflict(project_id,priority) do update set
+ title=excluded.title,status=excluded.status,summary=excluded.summary,work_details=excluded.work_details,
+ completion_criteria=excluded.completion_criteria,updated_at=now();
