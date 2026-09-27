@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
@@ -17,29 +18,26 @@ type DiscoveryProject = {
 async function getProject(): Promise<{ project: DiscoveryProject | null; error: string | null }> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-
   if (!url || !key) return { project: null, error: 'Supabase 환경변수를 확인해 주세요.' }
-
   const supabase = createClient(url, key)
   const { data, error } = await supabase
     .from('discovery_projects')
     .select('id,name,website_url,industry,main_services,target_customer,service_area,description,status')
-    .order('id', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
+    .order('id', { ascending: true }).limit(1).maybeSingle()
   return { project: data, error: error?.message ?? null }
 }
 
 export default async function DiscoveryPage() {
   const { project, error } = await getProject()
-
   const stats = [
     { label: 'Benchmark 질문', value: '0', note: '아직 등록된 질문이 없습니다.' },
     { label: '측정 기록', value: '0', note: 'Day 0 측정 전입니다.' },
     { label: '발견', value: '0', note: '측정 후 집계됩니다.' },
     { label: '검토 대기', value: '0', note: '현재 대기 작업이 없습니다.' },
   ]
+  const searchChannels = ['Google Search', 'Naver']
+  const aiChannels = ['ChatGPT', 'Gemini', 'Perplexity', 'Claude', 'Copilot']
+  const googleAiChannels = ['Google AI Overview / AI Mode']
 
   return (
     <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]">
@@ -50,26 +48,18 @@ export default async function DiscoveryPage() {
             <h1 className="text-3xl font-extrabold md:text-4xl">Discovery Dashboard</h1>
             <p className="mt-2 text-sm text-gray-500">검색과 AI에서 더담다가 어떻게 발견되는지 기록하고 변화 과정을 측정합니다.</p>
           </div>
-          <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm shadow-sm">
-            <span className="text-gray-400">Project</span>
-            <span className="ml-3 font-bold">{project?.name ?? '프로젝트 불러오는 중'}</span>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/discovery/dimensions" className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#16213a]">질문 재료 →</Link>
+            <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm shadow-sm"><span className="text-gray-400">Project</span><span className="ml-3 font-bold">{project?.name ?? '프로젝트 불러오는 중'}</span></div>
           </div>
         </header>
 
-        {error && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-            DB 연결 확인 필요: {error}
-          </div>
-        )}
+        {error && <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">DB 연결 확인 필요: {error}</div>}
 
         {project && (
           <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Live Project Data</p>
-                <h2 className="mt-1 text-xl font-bold">{project.name}</h2>
-                <p className="mt-2 text-sm text-gray-500">{project.description || '프로젝트 설명이 아직 없습니다.'}</p>
-              </div>
+              <div><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Live Project Data</p><h2 className="mt-1 text-xl font-bold">{project.name}</h2><p className="mt-2 text-sm text-gray-500">{project.description || '프로젝트 설명이 아직 없습니다.'}</p></div>
               {project.website_url && <span className="text-sm text-gray-500">{project.website_url}</span>}
             </div>
             <div className="mt-4 grid gap-3 text-sm md:grid-cols-4">
@@ -82,21 +72,12 @@ export default async function DiscoveryPage() {
         )}
 
         <section className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {stats.map((item) => (
-            <article key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-semibold text-gray-500">{item.label}</p>
-              <p className="my-2 text-4xl font-extrabold">{item.value}</p>
-              <p className="text-xs leading-relaxed text-gray-400">{item.note}</p>
-            </article>
-          ))}
+          {stats.map((item) => <article key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-gray-500">{item.label}</p><p className="my-2 text-4xl font-extrabold">{item.value}</p><p className="text-xs leading-relaxed text-gray-400">{item.note}</p></article>)}
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div><h2 className="text-xl font-bold">Activity Calendar</h2><p className="mt-1 text-sm text-gray-400">측정과 작업 이력이 날짜별로 쌓입니다.</p></div>
-              <span className="rounded-full bg-[#E8FAF3] px-3 py-1 text-xs font-bold text-[#087A56]">Day 0</span>
-            </div>
+            <div className="mb-6 flex items-center justify-between"><div><h2 className="text-xl font-bold">Activity Calendar</h2><p className="mt-1 text-sm text-gray-400">측정과 작업 이력이 날짜별로 쌓입니다.</p></div><span className="rounded-full bg-[#E8FAF3] px-3 py-1 text-xs font-bold text-[#087A56]">Day 0</span></div>
             <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-400">
               {['일','월','화','수','목','금','토'].map((day) => <div key={day} className="py-2">{day}</div>)}
               {Array.from({ length: 35 }).map((_, index) => <div key={index} className="aspect-square rounded-lg border border-gray-100 bg-[#FAFBFB]" />)}
@@ -107,7 +88,12 @@ export default async function DiscoveryPage() {
           <div className="space-y-6">
             <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
               <h2 className="text-xl font-bold">채널 현황</h2>
-              <div className="mt-5 space-y-3">{['Google','ChatGPT','Gemini'].map((channel) => <div key={channel} className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"><span className="font-semibold">{channel}</span><span className="text-sm text-gray-400">측정 전</span></div>)}</div>
+              <p className="mt-1 text-xs text-gray-400">V0.1 핵심 측정: Google Search + ChatGPT · Gemini · Perplexity</p>
+              <div className="mt-5 space-y-5">
+                <ChannelGroup title="검색" channels={searchChannels} core={['Google Search']} />
+                <ChannelGroup title="AI 발견" channels={aiChannels} core={['ChatGPT','Gemini','Perplexity']} />
+                <ChannelGroup title="Google AI" channels={googleAiChannels} core={[]} />
+              </div>
             </section>
             <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
               <h2 className="text-xl font-bold">최근 작업</h2>
@@ -119,4 +105,8 @@ export default async function DiscoveryPage() {
       </div>
     </div>
   )
+}
+
+function ChannelGroup({ title, channels, core }: { title: string; channels: string[]; core: string[] }) {
+  return <div><p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">{title}</p><div className="space-y-2">{channels.map((channel) => <div key={channel} className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"><div className="flex items-center gap-2"><span className="font-semibold">{channel}</span>{core.includes(channel) && <span className="rounded-full bg-[#E8FAF3] px-2 py-0.5 text-[10px] font-bold text-[#087A56]">V0.1</span>}</div><span className="text-sm text-gray-400">측정 전</span></div>)}</div></div>
 }
