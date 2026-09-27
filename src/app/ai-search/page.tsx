@@ -91,6 +91,12 @@ export default function AiSearchPage() {
               >
                 도입 문의하기
               </Link>
+              <Link
+                href="/guide/search-traffic-checklist"
+                className="border border-white/30 text-white font-semibold px-8 py-4 rounded-xl text-base hover:bg-white/10 transition-all"
+              >
+                검색 유입 점검 가이드
+              </Link>
               <a
                 href="#targets"
                 className="border border-white/30 text-white font-semibold px-8 py-4 rounded-xl text-base hover:bg-white/10 transition-all"
