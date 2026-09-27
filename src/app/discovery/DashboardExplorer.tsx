@@ -1,0 +1,40 @@
+'use client'
+import {useState} from 'react'
+import ActivityCalendar,{type CalendarMeasurement} from './ActivityCalendar'
+
+type Benchmark={id:number;question:string}
+type Props={measurements:CalendarMeasurement[];benchmarks:Benchmark[]}
+function shortChannel(c:string){return c==='Google Search'?'Google':c==='Naver Search'?'Naver':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI Web':c}
+function when(iso:string){return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}
+
+export default function DashboardExplorer({measurements,benchmarks}:Props){
+ const[selected,setSelected]=useState<CalendarMeasurement|null>(null)
+ const[list,setList]=useState<{title:string;items:CalendarMeasurement[]}|null>(null)
+ const[showBenchmarks,setShowBenchmarks]=useState(false)
+ const discovered=measurements.filter(m=>m.is_discovered)
+ const channelNames=['Google Search','Naver Search','ChatGPT','Gemini','OpenAI Web Search API','Perplexity','Claude','Copilot','Google AI']
+ const channels=channelNames.map(name=>{const items=measurements.filter(m=>m.channel===name);return{name,items,found:items.filter(m=>m.is_discovered).length}})
+ const openList=(title:string,items:CalendarMeasurement[])=>setList({title,items})
+ return <>
+  <section className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+   <Stat label="Benchmark 질문" value={benchmarks.length} note="고정 기준 질문 목록 보기" onClick={()=>setShowBenchmarks(true)}/>
+   <Stat label="측정 기록" value={measurements.length} note="전체 측정 기록 보기" onClick={()=>openList('전체 측정 기록',measurements)}/>
+   <Stat label="발견" value={discovered.length} note="발견된 기록만 보기" onClick={()=>openList('발견 기록',discovered)}/>
+   <Stat label="검토 대기" value={0} note="현재 대기 작업이 없습니다."/>
+  </section>
+  <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+   <ActivityCalendar measurements={measurements}/>
+   <div className="space-y-6">
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6"><h2 className="text-xl font-bold">채널 현황</h2><p className="mt-1 text-xs text-gray-400">채널을 누르면 해당 채널의 전체 측정 이력을 확인할 수 있습니다.</p><div className="mt-5 space-y-2">{channels.map(c=><button key={c.name} onClick={()=>c.items.length&&openList(shortChannel(c.name)+' 측정 이력',c.items)} className="flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-left hover:bg-emerald-50 disabled:cursor-default" disabled={!c.items.length}><span className="font-semibold">{shortChannel(c.name)}</span><span className="text-sm text-gray-500">{c.items.length?`측정 ${c.items.length} · 발견 ${c.found}/${c.items.length}`:'측정 전'}</span></button>)}</div></section>
+    <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6"><h2 className="text-xl font-bold">최근 작업</h2>{measurements.length?<div className="mt-5 space-y-2">{measurements.slice(0,6).map(m=><button key={m.id} onClick={()=>setSelected(m)} className="block w-full rounded-xl bg-gray-50 p-3 text-left text-sm hover:bg-emerald-50"><span className="font-bold">{shortChannel(m.channel)}</span><span className="ml-2 text-gray-500">{m.measurement_round??'측정'} · {m.is_discovered?'발견':'미발견'}</span><div className="mt-1 line-clamp-1 text-xs text-gray-500">{m.question||`질문 ID ${m.question_id}`}</div><div className="mt-1 text-xs text-gray-400">{when(m.created_at)}</div></button>)}</div>:<div className="mt-5 rounded-xl border border-dashed border-gray-300 p-5 text-center"><p className="text-sm font-semibold text-gray-500">작업 기록 0건</p></div>}</section>
+   </div>
+  </div>
+  {showBenchmarks&&<Modal title={`Benchmark 질문 (${benchmarks.length})`} close={()=>setShowBenchmarks(false)}>{benchmarks.map((b,i)=><div key={b.id} className="rounded-xl border border-gray-200 bg-gray-50 p-4"><p className="text-xs font-bold text-[#0A9B6C]">Benchmark {i+1}</p><p className="mt-1 text-sm font-semibold leading-relaxed">{b.question}</p></div>)}</Modal>}
+  {list&&<Modal title={`${list.title} (${list.items.length})`} close={()=>setList(null)}>{list.items.length?list.items.map(m=><button key={m.id} onClick={()=>{setList(null);setSelected(m)}} className="w-full rounded-xl border border-gray-200 bg-gray-50 p-4 text-left hover:border-emerald-300 hover:bg-emerald-50"><div className="flex justify-between gap-2"><span className="font-extrabold">{shortChannel(m.channel)}</span><span className="text-xs font-bold text-gray-500">{m.is_discovered?'발견':'미발견'}</span></div><p className="mt-2 line-clamp-2 text-sm text-gray-600">{m.question||`질문 ID ${m.question_id}`}</p><p className="mt-2 text-xs text-gray-400">{when(m.created_at)}</p></button>):<p className="text-sm text-gray-500">해당 기록이 없습니다.</p>}</Modal>}
+  {selected&&<Modal title={`${shortChannel(selected.channel)} · ${selected.measurement_round??'측정'}`} close={()=>setSelected(null)}><div className="grid gap-3 sm:grid-cols-3"><Info label="발견 여부" value={selected.is_discovered?'발견':'미발견'}/><Info label="측정 일시" value={when(selected.created_at)}/><Info label="채널" value={selected.channel}/></div><Block label="Benchmark 질문" value={selected.question||`질문 ID ${selected.question_id}`}/><Block label="실제 결과 / 답변" value={selected.result_text||'기록 없음'}/><Block label="출처 URL" value={selected.source_urls||'기록 없음'} links/><Block label="메모" value={selected.notes||'기록 없음'}/></Modal>}
+ </>
+}
+function Stat({label,value,note,onClick}:{label:string;value:number;note:string;onClick?:()=>void}){const C=onClick?'button':'article';return <C onClick={onClick} className={"rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm "+(onClick?'hover:border-emerald-300 hover:bg-emerald-50':'')}><p className="text-sm font-semibold text-gray-500">{label}</p><p className="my-2 text-4xl font-extrabold">{value}</p><p className="text-xs leading-relaxed text-gray-400">{note}</p></C>}
+function Modal({title,close,children}:{title:string;close:()=>void;children:React.ReactNode}){return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={close}><div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" onClick={e=>e.stopPropagation()}><div className="mb-5 flex items-start justify-between gap-4"><h3 className="text-xl font-extrabold">{title}</h3><button onClick={close} className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-bold">닫기</button></div><div className="space-y-3">{children}</div></div></div>}
+function Info({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-400">{label}</p><p className="mt-1 text-sm font-bold">{value}</p></div>}
+function Block({label,value,links=false}:{label:string;value:string;links?:boolean}){return <div className="mt-5"><p className="mb-2 text-sm font-bold">{label}</p><div className="whitespace-pre-wrap break-words rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm leading-relaxed">{links&&value!=='기록 없음'?value.split(/\s+/).map((v,i)=>/^https?:\/\//.test(v)?<a key={i} href={v} target="_blank" rel="noreferrer" className="block text-blue-600 underline">{v}</a>:<span key={i}>{v} </span>):value}</div></div>}
