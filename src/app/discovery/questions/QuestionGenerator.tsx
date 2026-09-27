@@ -1,5 +1,5 @@
 'use client'
-import { useMemo,useState } from 'react'
+import { useMemo,useState } from 'react'\nimport { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 type D={id:number;dimension_type:string;dimension_value:string;priority:number}
 type C={question:string;intent:string;mode:string;ingredients:D[];combinationKey:string}
