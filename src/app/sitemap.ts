@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: 'https://the-damda.co.kr/ai-search',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: 'https://the-damda.co.kr/contact',
       lastModified: new Date(),
       changeFrequency: 'monthly',
