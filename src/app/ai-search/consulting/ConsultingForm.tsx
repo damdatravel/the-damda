@@ -1,6 +1,7 @@
 'use client'
 import {FormEvent,useState} from 'react'
 import {createClient} from '@supabase/supabase-js'
+import Link from 'next/link'
 
 const concernOptions=['검색해도 업체가 잘 나오지 않음','ChatGPT 등 AI에서 잘 발견되지 않음','광고 의존도가 높음','홈페이지 검색 유입이 적음','현재 상태를 먼저 진단하고 싶음']
 
@@ -29,7 +30,7 @@ export default function ConsultingForm(){
   <fieldset><legend className="text-sm font-bold">현재 가장 궁금한 문제</legend><div className="mt-3 grid gap-2">{concernOptions.map(x=><label key={x} className="flex cursor-pointer gap-3 rounded-xl bg-[#F7FAF9] p-3 text-sm"><input type="checkbox" checked={concerns.includes(x)} onChange={()=>toggle(x)}/><span>{x}</span></label>)}</div></fieldset>
   <div className="grid gap-4 md:grid-cols-3"><label className="text-sm font-bold">담당자명 *<input name="contact_name" required className={input}/></label><label className="text-sm font-bold">전화번호<input name="phone" inputMode="tel" className={input}/></label><label className="text-sm font-bold">이메일<input name="email" type="email" className={input}/></label></div>
   <label className="block text-sm font-bold">추가로 전달할 내용<textarea name="message" rows={4} className={input}/></label>
-  <label className="flex gap-3 rounded-xl border border-gray-200 p-4 text-sm text-gray-600"><input name="privacy_agreed" type="checkbox" required/><span>상담 및 진단을 위해 업체 정보와 담당자 연락처를 수집·이용하는 것에 동의합니다. *</span></label>
+  <div className="rounded-xl border border-gray-200 p-4 text-sm text-gray-600"><div className="mb-3 rounded-lg bg-gray-50 p-3 text-xs leading-6"><p><b>수집·이용 목적:</b> 상담 접수, 홈페이지 진단·검토, 상담 및 결과 안내</p><p><b>필수 항목:</b> 업체명/브랜드명, 홈페이지 URL, 담당자명, 전화번호 또는 이메일 중 1개 이상</p><p><b>선택 항목:</b> 업종, 주요 서비스·상품, 현재 고민, 추가 상담내용</p><p><b>보유기간:</b> 미계약 상담은 상담 종료일로부터 1년 후 파기. 계약 전환 시 계약·고객관리 목적에 필요한 기간 보관</p><p><b>동의 거부:</b> 동의를 거부할 수 있으나 상담 신청은 제한됩니다.</p></div><label className="flex gap-3"><input name="privacy_agreed" type="checkbox" required/><span><b>개인정보 수집·이용에 동의합니다. (필수)</b> · <Link href="/privacy" target="_blank" className="text-[#087A56] underline">개인정보처리방침 보기</Link></span></label></div>
   {error&&<p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
   <button disabled={busy} className="w-full rounded-xl bg-[#10E096] px-6 py-4 font-extrabold text-[#0A0F1E] disabled:opacity-50">{busy?'접수 중...':'진단 상담 신청하기 →'}</button>
  </form>
