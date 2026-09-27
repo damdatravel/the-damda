@@ -296,13 +296,13 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">AI 검색 최적화</h3>
-                <p className="text-[#10E096] text-sm font-semibold mb-4">AEO · GEO · SEO 대행</p>
+                <p className="text-[#10E096] text-sm font-semibold mb-4">검색 · AI 발견 관리</p>
                 <p className="text-gray-300 leading-relaxed mb-6">
-                  ChatGPT · Perplexity · 구글 AI가 당신의 브랜드를 먼저 추천하도록.
-                  AI 시대의 검색 기술 인프라를 구축해 드립니다.
+                  고객이 실제로 묻는 질문을 기준으로 검색·AI 발견 상태를 측정하고,
+                  필요한 정보부터 순서대로 개선합니다.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-8">
-                  {['분양현장', '병원', '전문직', '기업브랜드'].map(tag => (
+                  {['Benchmark 측정', '정보 구조 개선', '재측정', '작업 기록'].map(tag => (
                     <span key={tag} className="text-xs bg-white/10 text-gray-300 px-3 py-1 rounded-full">{tag}</span>
                   ))}
                 </div>
