@@ -52,7 +52,7 @@ export default function Footer() {
             <p>주식회사 더담다 | 대표이사 김봉근 | 사업자등록번호 475-81-03874 | 통신판매업신고 제2026-영종구-0028호</p>
             <p>인천광역시 영종구 영종대로162번길 20, 305호 (운서동, 스타힐스빌딩)</p>
           </div>
-          <p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p>
+          <div className="flex flex-col items-start gap-2 md:items-end"><Link href="/privacy" className="font-semibold text-gray-400 hover:text-white">개인정보처리방침</Link><p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p></div>
         </div>
       </div>
     </footer>
