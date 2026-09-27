@@ -21,6 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: 'https://the-damda.co.kr/guide/search-traffic-checklist',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: 'https://the-damda.co.kr/privacy',
       lastModified: new Date(),
       changeFrequency: 'yearly',
