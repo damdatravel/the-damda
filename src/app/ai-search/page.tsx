@@ -26,28 +26,28 @@ const targets = [
     icon: '🏢',
     category: '분양 현장',
     sub: '지식산업센터 · 아파트 · 오피스텔',
-    desc: '투자자·실수요자가 ChatGPT, Perplexity, 구글 AI에 현장을 검색할 때 최상단 추천을 선점합니다.',
+    desc: '투자자·실수요자가 검색과 AI에서 현장을 찾을 때 필요한 정보가 명확히 전달되도록 발견 상태를 점검하고 개선합니다.',
     badge: 'B2B',
   },
   {
     icon: '🏥',
     category: '병원',
     sub: '성형외과 · 치과 · 피부과',
-    desc: '진료과목별 주요 질문 및 수술 후기 검색 시 AI 추천 1순위에 노출되어 신규 환자를 유입합니다.',
+    desc: '진료과목과 이용 상황에 관한 실제 고객 질문을 기준으로 검색·AI에서 병원 정보가 어떻게 발견되는지 측정하고 개선합니다.',
     badge: '구독형',
   },
   {
     icon: '⚖️',
     category: '전문직',
     sub: '변호사 · 세무사 · 변리사',
-    desc: '고단가 수임 사건 관련 전문성 검증 및 법률·세무 AI 질문 답변을 선점하여 수임률을 높입니다.',
+    desc: '법률·세무 관련 고객 질문에서 전문 서비스와 업무 범위를 이해하기 쉽도록 정보 구조와 발견 상태를 점검합니다.',
     badge: '구독형',
   },
   {
     icon: '🏭',
     category: '기업 · 브랜드',
     sub: '대기업 · FMCG · 신제품 런칭',
-    desc: '신제품 런칭, 제품 효능, 브랜드 연관 질문에 대한 AI 추천 1순위를 선점합니다.',
+    desc: '신제품과 브랜드 관련 질문에서 공식 정보가 검색·AI에 명확하게 전달되도록 현재 상태를 측정하고 필요한 정보를 보완합니다.',
     badge: 'Enterprise',
   },
 ]
@@ -191,14 +191,13 @@ export default function AiSearchPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#0A0F1E] mb-2">담다트래블 — 정식 오픈 전 구글 AI 노출 실증</h3>
+                  <h3 className="text-xl font-bold text-[#0A0F1E] mb-2">담다트래블 — 검색·AI 발견 관리 자체 적용 사례</h3>
                   <p className="text-gray-500 leading-relaxed mb-4">
                     자체 서비스인 <strong className="text-[#0A0F1E]">담다트래블(damdatravel.com)</strong>은 정식 오픈 전부터
-                    구글 AI 개요(AI Overview)에 노출되어 외국인 유입 및 예약 시도를 기록했습니다.
-                    광고비 0원, 순수 기술 구조만으로 달성한 결과입니다.
+                    검색·AI 환경에서 발견되는 과정을 직접 확인하며 홈페이지 정보 구조와 콘텐츠를 지속적으로 점검해 왔습니다.
                   </p>
                   <p className="text-gray-500 leading-relaxed">
-                    이 기술을 그대로 클라이언트의 브랜드·현장에 이식해 드립니다.
+                    이 경험을 바탕으로 고객사도 현재 상태를 먼저 측정하고, 필요한 개선 작업을 순서대로 진행합니다.
                   </p>
                 </div>
               </div>
