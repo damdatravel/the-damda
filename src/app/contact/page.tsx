@@ -13,11 +13,11 @@ export default function ContactPage() {
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Contact</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-            함께 합시다.
+            새로운 가치를 함께 만듭니다.
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed">
-            B2G 시범 사업, B2B 파트너십, 투자 제안 모두 환영합니다.<br />
-            제안서·소개서 발송 및 미팅 일정 조율도 가능합니다.
+            사업 제휴부터 공공기관 협력, 투자까지 다양한 제안을 기다립니다.<br />
+            더담다와 함께할 새로운 기회를 이야기해 주세요.
           </p>
         </div>
       </section>
