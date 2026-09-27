@@ -1,5 +1,5 @@
 'use client'
-import {useState} from 'react'
+import {useEffect,useState} from 'react'
 import ActivityCalendar,{type CalendarMeasurement} from './ActivityCalendar'
 
 type Benchmark={id:number;question:string}
@@ -11,6 +11,8 @@ export default function DashboardExplorer({measurements,benchmarks}:Props){
  const[selected,setSelected]=useState<CalendarMeasurement|null>(null)
  const[list,setList]=useState<{title:string;items:CalendarMeasurement[]}|null>(null)
  const[showBenchmarks,setShowBenchmarks]=useState(false)
+ const[reviewCount,setReviewCount]=useState(0)
+ useEffect(()=>{const sync=()=>{try{const a=JSON.parse(localStorage.getItem('discovery_review_items_v01')||'[]');setReviewCount(a.filter((x:any)=>x.status==='pending').length)}catch{setReviewCount(0)}};sync();window.addEventListener('discovery-review-change',sync);return()=>window.removeEventListener('discovery-review-change',sync)},[])
  const discovered=measurements.filter(m=>m.is_discovered)
  const channelNames=['Google Search','Naver Search','ChatGPT','Gemini','OpenAI Web Search API','Perplexity','Claude','Copilot','Google AI']
  const channels=channelNames.map(name=>{const items=measurements.filter(m=>m.channel===name);return{name,items,found:items.filter(m=>m.is_discovered).length}})
@@ -20,7 +22,7 @@ export default function DashboardExplorer({measurements,benchmarks}:Props){
    <Stat label="Benchmark 질문" value={benchmarks.length} note="고정 기준 질문 목록 보기" onClick={()=>setShowBenchmarks(true)}/>
    <Stat label="측정 기록" value={measurements.length} note="전체 측정 기록 보기" onClick={()=>openList('전체 측정 기록',measurements)}/>
    <Stat label="발견" value={discovered.length} note="발견된 기록만 보기" onClick={()=>openList('발견 기록',discovered)}/>
-   <Stat label="검토 대기" value={0} note="현재 대기 작업이 없습니다."/>
+   <Stat label="검토 대기" value={reviewCount} note={reviewCount?`승인·수정·보류할 개선안 ${reviewCount}건`:"현재 대기 작업이 없습니다."}/>
   </section>
   <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
    <ActivityCalendar measurements={measurements}/>
