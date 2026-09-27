@@ -1,6 +1,7 @@
 'use client'
 import {useState} from 'react'
-import Link from 'next/link'\nimport {createClient} from '@supabase/supabase-js'
+import Link from 'next/link'
+import {createClient} from '@supabase/supabase-js'
 type Q={id:number;question:string;intent:string|null;dimension_count:number;is_benchmark:boolean;status:string;created_at:string}
 export default function SavedQuestions({initial}:{initial:Q[]}){
  const[qs,setQs]=useState(initial),[busy,setBusy]=useState<number|null>(null),[msg,setMsg]=useState('')
