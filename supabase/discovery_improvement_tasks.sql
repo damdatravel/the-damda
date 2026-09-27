@@ -57,7 +57,7 @@ values (
     {"key":"sitemap","label":"sitemap에 가이드 URL 포함"},
     {"key":"robots","label":"robots.txt에서 가이드 차단 없음"},
     {"key":"internalLink","label":"검색·AI 발견 관리 페이지에서 내부 링크 연결"},
-    {"key":"serviceLink","label":"가이드에서 검색·AI 발견 관리 서비스로 연결"},
+    {"key":"consultingLink","label":"가이드에서 현재 상태 진단 신청으로 연결"},
     {"key":"safeCopy","label":"검색 순위·AI 추천 노출 보장 표현 없음"}
   ]'::jsonb
 )
