@@ -1,0 +1,18 @@
+import type {Metadata} from 'next'
+export const metadata:Metadata={title:'개인정보처리방침',description:'주식회사 더담다 개인정보처리방침',alternates:{canonical:'https://the-damda.co.kr/privacy'}}
+export default function PrivacyPage(){return <main className="min-h-screen bg-[#F7FAF9] px-6 pb-20 pt-32 text-[#0A0F1E]"><article className="mx-auto max-w-4xl rounded-3xl border border-gray-200 bg-white p-7 md:p-10">
+ <p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Privacy Policy</p><h1 className="mt-2 text-3xl font-extrabold">개인정보처리방침</h1><p className="mt-4 text-sm leading-7 text-gray-600">주식회사 더담다(이하 “회사”)는 개인정보 보호법 등 관계 법령을 준수하며, 이용자의 개인정보를 안전하게 처리하기 위해 다음과 같이 개인정보처리방침을 공개합니다.</p>
+ <div className="mt-10 space-y-9 text-sm leading-7 text-gray-700">
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">1. 개인정보의 처리 목적</h2><p className="mt-2">회사는 검색·AI 발견 관리 상담 접수, 홈페이지 진단 및 검토, 상담 연락과 결과 안내, 계약 및 프로젝트 진행 여부 확인을 위해 필요한 개인정보를 처리합니다. 수집한 정보는 안내한 목적 외의 용도로 이용하지 않으며, 목적이 변경되는 경우 관계 법령에 따라 필요한 절차를 진행합니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">2. 처리하는 개인정보 항목</h2><p className="mt-2"><b>필수:</b> 업체명 또는 브랜드명, 홈페이지 URL, 담당자명, 전화번호 또는 이메일 중 1개 이상의 연락수단</p><p><b>선택:</b> 업종, 주요 서비스·상품, 현재 고민, 전화번호, 이메일, 추가 상담내용</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">3. 보유 및 이용기간</h2><p className="mt-2">상담만 진행하고 계약으로 전환되지 않은 정보는 <b>상담 종료일로부터 1년</b> 보관 후 파기합니다. 계약 또는 정식 프로젝트로 전환된 경우에는 계약 이행 및 고객관리 과정에서 필요한 기간 동안 보관하며, 관계 법령에서 별도 보존기간을 정한 정보는 해당 기간 동안 보관할 수 있습니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">4. 개인정보의 제3자 제공</h2><p className="mt-2">회사는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 법령에 근거가 있거나 별도의 동의를 받은 경우에는 예외로 할 수 있습니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">5. 개인정보 처리의 위탁 및 국외 처리</h2><p className="mt-2">회사는 상담 접수 데이터의 저장 및 시스템 운영을 위해 Supabase의 클라우드 서비스를 이용합니다. 현재 Discovery 시스템의 데이터베이스는 일본(Tokyo) 리전에서 운영됩니다. 서비스 제공 구조나 처리 위치가 변경되는 경우 실제 처리 현황에 맞춰 본 방침을 갱신합니다.</p><p className="mt-2 text-xs text-gray-500">※ 구체적인 법적 국외이전 고지·동의가 추가로 필요한 처리 형태가 발생하는 경우 관계 법령에 따른 조치를 별도로 시행합니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">6. 개인정보의 파기</h2><p className="mt-2">보유기간이 경과하거나 처리 목적이 달성되어 개인정보가 불필요하게 된 경우 지체 없이 파기합니다. 전자적 파일은 복구 또는 재생이 어렵도록 삭제하며, 출력물이 있는 경우 분쇄 또는 이에 준하는 방법으로 파기합니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">7. 정보주체의 권리와 행사방법</h2><p className="mt-2">이용자는 자신의 개인정보에 대해 열람, 정정·삭제, 처리정지 등을 요청할 수 있습니다. 요청은 아래 개인정보 관련 문의처를 통해 접수할 수 있으며 회사는 관계 법령에 따라 필요한 조치를 진행합니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">8. 개인정보의 안전성 확보조치</h2><p className="mt-2">회사는 개인정보에 대한 접근을 필요한 범위로 제한하고, 데이터베이스 접근권한 관리 및 서비스 운영에 필요한 기술적·관리적 보호조치를 적용합니다.</p></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">9. 개인정보 보호 관련 문의</h2><div className="mt-2 rounded-2xl bg-[#F7FAF9] p-5"><p><b>회사:</b> 주식회사 더담다</p><p><b>대표:</b> 김봉근</p><p><b>이메일:</b> ceo@the-damda.co.kr</p><p><b>전화:</b> 010-3662-5969</p></div></section>
+  <section><h2 className="text-lg font-extrabold text-[#0A0F1E]">10. 개인정보처리방침의 변경</h2><p className="mt-2">본 개인정보처리방침은 <b>2026년 9월 28일</b>부터 적용합니다. 내용이 변경되는 경우 홈페이지를 통해 공개합니다.</p></section>
+ </div>
+ <p className="mt-10 rounded-2xl bg-amber-50 p-4 text-xs leading-6 text-amber-900">본 방침은 현재 더담다 홈페이지와 검색·AI 발견 관리 상담 접수 기능의 실제 운영 범위를 기준으로 작성되었습니다. 향후 고객 로그인, 결제, 추가 외부 서비스 연동 등이 도입되면 해당 처리 내용을 반영해 개정합니다.</p>
+ </article></main>}
