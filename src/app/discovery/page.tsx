@@ -9,7 +9,7 @@ type P={id:number;name:string|null;website_url:string|null;industry:string|null;
 type B={id:number;question:string}
 type T={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
 async function getData(){
- const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
  if(!url||!key)return{project:null as P|null,benchmarks:[] as B[],measurements:[] as CalendarMeasurement[],tasks:[] as T[],error:'Supabase 환경변수를 확인해 주세요.'}
  const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
  const[p,q,m,t]=await Promise.all([
