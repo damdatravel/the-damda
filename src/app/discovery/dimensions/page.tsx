@@ -47,7 +47,7 @@ export default async function DimensionsPage() {
             <h1 className="text-3xl font-extrabold md:text-4xl">질문 재료</h1>
             <p className="mt-2 text-sm text-gray-500">질문 조합 엔진이 사용할 실제 재료를 확인합니다. 현재는 읽기 전용입니다.</p>
           </div>
-          <Link href="/discovery" className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold shadow-sm">← 대시보드</Link>
+          <div className="flex gap-2"><Link href="/discovery/questions" className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white">질문 생성 →</Link><Link href="/discovery" className="rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold shadow-sm">← 대시보드</Link></div>
         </header>
 
         {error && <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">질문 재료를 불러오지 못했습니다: {error}<br/><span className="text-xs">Supabase Data API에서 discovery_question_dimensions 테이블이 노출되어 있는지도 확인해 주세요.</span></div>}
