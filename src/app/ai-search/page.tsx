@@ -2,23 +2,23 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI 검색 최적화 대행 | AEO · GEO · SEO 기술 패키지',
-  description: '기존 광고 대행사가 하지 못하는 AI 시대의 검색 기술. ChatGPT, Perplexity, 구글 AI에 당신의 브랜드가 최상단에 추천되도록 AEO/GEO 파이프라인을 구축해 드립니다.',
+  title: '검색·AI 발견 관리 | 검색 노출 진단·개선',
+  description: '검색엔진과 AI가 업체의 서비스와 고객 이용 상황을 이해하기 쉽도록 정보 구조를 점검하고, 고정 질문으로 발견 상태를 측정·개선합니다.',
   alternates: { canonical: 'https://the-damda.co.kr/ai-search' },
 }
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Service',
-  name: 'AI 검색 최적화 기술 인프라 구축 패키지 (AEO / GEO / SEO)',
+  name: '검색·AI 발견 관리 서비스',
   provider: {
     '@type': 'Organization',
     name: '주식회사 더담다',
     url: 'https://the-damda.co.kr',
   },
-  description: '브랜드·현장의 Q&A 데이터를 AI 크롤러가 가장 좋아하는 기술 구조(Schema Code)로 변환하여 ChatGPT, Perplexity, 구글 AI 추천 답변의 최상단을 선점시키는 B2B 기술 서비스',
+  description: '고객이 실제로 검색하거나 AI에 물어볼 질문을 기준으로 현재 발견 상태를 측정하고, 홈페이지 정보 구조와 콘텐츠를 순차적으로 개선한 뒤 같은 질문으로 변화를 재측정하는 서비스',
   areaServed: 'KR',
-  serviceType: 'AEO / GEO / SEO 기술 대행',
+  serviceType: '검색·AI 발견 상태 진단 및 개선 관리',
 }
 
 const targets = [
@@ -77,12 +77,12 @@ export default function AiSearchPage() {
               AI Search Optimization · AEO / GEO / SEO
             </p>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6">
-              AI가 당신의 브랜드를<br />
-              <span className="text-[#10E096]">먼저 추천하게 합니다.</span>
+              검색에서도, AI에서도<br />
+              <span className="text-[#10E096]">찾을 수 있게 준비합니다.</span>
             </h1>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-10 max-w-xl">
-              기존 광고 대행사가 하지 못하는 AI 시대의 검색 기술.<br />
-              ChatGPT · Perplexity · 구글 AI 최상단을 선점합니다.
+              고객이 실제로 묻는 질문을 기준으로 현재 발견 상태를 측정하고,<br />
+              홈페이지의 정보 구조를 하나씩 개선한 뒤 같은 질문으로 다시 확인합니다.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
@@ -108,11 +108,11 @@ export default function AiSearchPage() {
           <div className="max-w-2xl mx-auto text-center mb-16">
             <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Problem</p>
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#0A0F1E] mb-6">
-              당신의 고객은 이미<br />네이버 블로그를 보지 않습니다
+              광고만으로는 알기 어려운<br />검색·AI 발견 상태를 확인합니다
             </h2>
             <p className="text-gray-500 text-lg leading-relaxed">
-              똑똑한 소비자, 부자, 3040 투자자들은 이제 네이버 블로그 광고를 건너뜁니다.
-              그들은 <strong className="text-[#0A0F1E]">ChatGPT, Perplexity, 구글 AI에 직접 물어봅니다.</strong>
+              고객은 검색엔진뿐 아니라 ChatGPT, Perplexity, 구글 AI처럼 다양한 경로에서 업체와 서비스를 찾습니다.
+              더담다는 <strong className="text-[#0A0F1E]">실제 고객 질문을 기준으로 현재 어디에서 발견되는지부터 측정합니다.</strong>
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -140,30 +140,29 @@ export default function AiSearchPage() {
           <div className="max-w-2xl mx-auto text-center mb-16">
             <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Solution</p>
             <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6">
-              AI 크롤러가 가장 좋아하는<br />기술 구조로 변환합니다
+              질문을 만들고, 측정하고,<br />필요한 정보부터 개선합니다
             </h2>
             <p className="text-gray-400 text-lg leading-relaxed">
-              주식회사 더담다는 브랜드·현장의 Q&A 데이터를
-              AI 크롤러가 최우선으로 학습하는 <span className="text-[#10E096] font-semibold">Schema.org(JSON-LD) 구조화 코드</span>로 변환하여
-              AI 추천 답변의 최상단을 선점시킵니다.
+              주식회사 더담다는 업종과 서비스를 바탕으로 고객이 실제로 물어볼 질문을 만들고,
+              검색·AI에서의 발견 상태를 기록합니다. 이후 <span className="text-[#10E096] font-semibold">서비스 설명, FAQ, 가이드, 구조화 정보</span> 등 필요한 부분을 순서대로 개선하고 같은 질문으로 다시 측정합니다.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
                 step: '01',
-                title: '맞춤형 Q&A 웹사이트 제작',
-                desc: '클라이언트 업종·현장에 최적화된 Landing 및 FAQ 페이지를 제작합니다.',
+                title: 'Benchmark 질문 · 최초 측정',
+                desc: '업체 이름을 넣지 않은 실제 고객 질문을 정하고 검색·AI에서 현재 발견 상태를 기록합니다.',
               },
               {
                 step: '02',
-                title: 'AI 구조화 코드 이식',
-                desc: 'Schema.org JSON-LD 및 AEO/GEO 최적화 스크립트를 전체 페이지에 적용합니다.',
+                title: '우선순위별 개선 작업',
+                desc: '측정 결과를 바탕으로 부족한 서비스 설명, FAQ, 가이드와 기술 정보를 순서대로 보완합니다.',
               },
               {
                 step: '03',
-                title: '구글 실시간 파이프라인 연동',
-                desc: '구글 서치콘솔 등록 및 Search Indexing API 연동으로 실시간 데이터 파이프라인을 구축합니다.',
+                title: '같은 질문으로 재측정',
+                desc: '작업 이력과 적용 시점을 기록하고 같은 Benchmark 질문으로 발견 상태의 변화를 다시 확인합니다.',
               },
             ].map(item => (
               <div key={item.step} className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:border-[#10E096]/30 transition-all">
@@ -252,11 +251,11 @@ export default function AiSearchPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">Contact</p>
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-            AI 시대, 먼저 선점하세요
+            현재 발견 상태부터 확인하세요
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            업종과 규모에 맞는 맞춤 제안을 드립니다.<br />
-            부담 없이 문의해 주세요.
+            검색과 AI에서 현재 어떻게 발견되는지 확인하고,<br />
+            필요한 개선 작업을 순서대로 제안합니다.
           </p>
           <Link
             href="/contact"
