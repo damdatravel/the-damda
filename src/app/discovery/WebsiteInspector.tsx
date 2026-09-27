@@ -1,0 +1,16 @@
+'use client'
+import {useState} from 'react'
+type Page={url:string;title?:string;description?:string;h1?:string;structuredData?:string[];hasFaq?:boolean;error?:string}
+type Result={checkedAt:string;website:string;pageCount:number;sitemapFound:boolean;sitemapUrlCount:number;structuredDataTypes:string[];pages:Page[]}
+export default function WebsiteInspector({url}:{url?:string|null}){
+ const[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState<Result|null>(null)
+ const run=async()=>{setBusy(true);setError('');try{const r=await fetch('/api/discovery/inspect-website',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});const j=await r.json();if(!r.ok)throw new Error(j.error||'홈페이지 확인 실패');setResult(j)}catch(e:any){setError(e.message)}finally{setBusy(false)}}
+ return <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
+  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Website Check</p><h2 className="mt-1 text-xl font-extrabold">현재 홈페이지 현황 확인</h2><p className="mt-2 text-sm text-gray-500">개선안을 만들기 전에 기존 페이지·제목·주요 설명·구조화 정보·sitemap을 먼저 확인합니다.</p>{url&&<p className="mt-1 text-xs text-gray-400">{url}</p>}</div><button onClick={run} disabled={busy} className="shrink-0 rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{busy?'확인 중...':'홈페이지 확인'}</button></div>
+  {error&&<div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+  {result&&<div className="mt-5"><div className="grid gap-3 md:grid-cols-4"><div className="rounded-xl bg-gray-50 p-4"><p className="text-xs text-gray-400">확인 페이지</p><p className="mt-1 text-xl font-extrabold">{result.pageCount}</p></div><div className="rounded-xl bg-gray-50 p-4"><p className="text-xs text-gray-400">Sitemap</p><p className="mt-1 font-extrabold">{result.sitemapFound?'확인됨':'미확인'}</p></div><div className="rounded-xl bg-gray-50 p-4"><p className="text-xs text-gray-400">Sitemap URL</p><p className="mt-1 text-xl font-extrabold">{result.sitemapUrlCount}</p></div><div className="rounded-xl bg-gray-50 p-4"><p className="text-xs text-gray-400">구조화 정보</p><p className="mt-1 text-sm font-bold">{result.structuredDataTypes.join(', ')||'미확인'}</p></div></div>
+   <div className="mt-4 space-y-2">{result.pages.map((p,i)=><details key={p.url+i} className="rounded-xl border border-gray-200 bg-gray-50 p-4"><summary className="cursor-pointer text-sm font-bold">{p.title||p.h1||p.url}{p.error?' · 확인 실패':''}</summary><div className="mt-3 space-y-1 text-sm text-gray-600"><p><b>URL:</b> {p.url}</p>{p.h1&&<p><b>H1:</b> {p.h1}</p>}{p.description&&<p><b>설명:</b> {p.description}</p>}<p><b>FAQ 관련 내용:</b> {p.hasFaq?'있음':'미확인'}</p>{p.structuredData?.length?<p><b>구조화 정보:</b> {p.structuredData.join(', ')}</p>:null}{p.error&&<p className="text-red-600">{p.error}</p>}</div></details>)}</div>
+   <p className="mt-3 text-xs text-gray-400">현재 버전은 최대 8개 공개 페이지를 빠르게 확인합니다. 이 결과를 다음 단계에서 Benchmark 분석과 함께 사용합니다.</p>
+  </div>}
+ </section>
+}
