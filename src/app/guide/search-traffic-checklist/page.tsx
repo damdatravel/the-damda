@@ -26,7 +26,7 @@ export default function SearchTrafficChecklist(){
   <section className="mx-auto max-w-5xl px-6 py-20">
    <div className="mb-12"><p className="text-sm font-bold text-[#0A9B6C]">CHECKLIST</p><h2 className="mt-2 text-3xl font-extrabold">6단계 기본 점검</h2><p className="mt-4 max-w-3xl leading-7 text-gray-600">한 가지 원인만으로 검색 유입이 줄었다고 단정하기보다 기술 상태, 검색 결과 정보, 공식 도구 데이터, 내부 연결과 콘텐츠 방향을 함께 살펴보는 것이 좋습니다.</p></div>
    <div className="space-y-5">{checks.map(([t,d])=><article key={t} className="rounded-2xl border border-gray-200 p-6"><h3 className="text-xl font-bold">{t}</h3><p className="mt-3 leading-7 text-gray-600">{d}</p></article>)}</div>
-   <div className="mt-12 rounded-3xl bg-[#F0FDF9] p-8"><h2 className="text-2xl font-extrabold">점검 후에도 원인이 명확하지 않다면</h2><p className="mt-4 leading-7 text-gray-600">더담다는 특정 검색 순위나 AI 추천 노출을 보장하지 않습니다. 실제 고객 질문을 기준으로 현재 발견 상태와 홈페이지 정보 구조를 확인하고, 확인된 문제부터 순서대로 개선합니다.</p><div className="mt-6 flex flex-wrap gap-3"><Link href="/ai-search" className="rounded-xl bg-[#0A0F1E] px-5 py-3 font-bold text-white">검색·AI 발견 관리 보기</Link><Link href="/ai-search/consulting" className="rounded-xl border border-[#0A0F1E] px-5 py-3 font-bold">현재 상태 진단 신청</Link></div></div>
+   <div className="mt-12 rounded-3xl bg-[#F0FDF9] p-8"><h2 className="text-2xl font-extrabold">점검 후에도 원인이 명확하지 않다면</h2><p className="mt-4 leading-7 text-gray-600">직접 확인하기 어렵거나 여러 문제가 함께 있는 것 같다면 현재 홈페이지 상태부터 진단해 보세요. 실제 고객 질문과 홈페이지 정보 구조를 기준으로 현재 발견 상태를 확인합니다.</p><div className="mt-6"><Link href="/ai-search/consulting" className="inline-block rounded-xl bg-[#0A0F1E] px-5 py-3 font-bold text-white">현재 상태 진단 신청</Link></div></div>
   </section>
  </main>
 }
