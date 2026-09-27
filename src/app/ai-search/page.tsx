@@ -86,7 +86,7 @@ export default function AiSearchPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/contact"
+                href="/ai-search/consulting"
                 className="bg-[#10E096] text-[#0A0F1E] font-bold px-8 py-4 rounded-xl text-base hover:bg-[#0DC47D] transition-all hover:scale-105"
               >
                 도입 문의하기
@@ -227,7 +227,7 @@ export default function AiSearchPage() {
                 <p className="text-gray-600 leading-relaxed mb-6">{item.desc}</p>
                 <div className="border-t border-gray-200 pt-5">
                   <Link
-                    href="/contact"
+                    href="/ai-search/consulting"
                     className="inline-flex items-center gap-2 text-[#0DC47D] font-semibold hover:gap-4 transition-all"
                   >
                     도입 문의하기
@@ -257,7 +257,7 @@ export default function AiSearchPage() {
             필요한 개선 작업을 순서대로 제안합니다.
           </p>
           <Link
-            href="/contact"
+            href="/ai-search/consulting"
             className="inline-block bg-[#10E096] text-[#0A0F1E] font-bold text-lg px-10 py-4 rounded-xl hover:bg-[#0DC47D] transition-colors"
           >
             도입 문의하기
