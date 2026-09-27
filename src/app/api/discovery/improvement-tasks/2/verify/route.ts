@@ -15,7 +15,7 @@ export async function POST(req:Request){
    {key:'sitemap',label:'sitemap에 가이드 URL 포함',pass:site.ok&&site.text.includes(target),detail:site.ok?'sitemap 확인':'sitemap 응답 실패'},
    {key:'robots',label:'robots.txt에서 가이드 차단 없음',pass:robots.ok&&!new RegExp('Disallow:\\s*'+target.replace(/\//g,'\\/'),'i').test(robots.text),detail:robots.ok?'직접 차단 규칙 없음':'robots.txt 확인 실패'},
    {key:'internalLink',label:'검색·AI 발견 관리 페이지에서 내부 링크 연결',pass:service.ok&&service.text.includes(target),detail:'/ai-search 연결 확인'},
-   {key:'serviceLink',label:'가이드에서 검색·AI 발견 관리 서비스로 연결',pass:page.text.includes('href="/ai-search"')||page.text.includes('href="'+origin+'/ai-search"'),detail:'서비스 링크 확인'},
+   {key:'consultingLink',label:'가이드에서 현재 상태 진단 신청으로 연결',pass:page.text.includes('href="/ai-search/consulting"')||page.text.includes('href="'+origin+'/ai-search/consulting"'),detail:'진단 신청 링크 확인'},
    {key:'safeCopy',label:'검색 순위·AI 추천 노출 보장 표현 없음',pass:!/(1위|최상단|노출을 보장|추천을 보장)/.test(page.text),detail:'보장형 표현 검사'}
   ]
   const passed=checks.every(x=>x.pass),now=new Date().toISOString()
