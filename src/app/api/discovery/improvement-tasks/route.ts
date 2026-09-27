@@ -1,0 +1,4 @@
+import {NextResponse} from 'next/server'
+import {createClient} from '@supabase/supabase-js'
+function client(){const u=process.env.NEXT_PUBLIC_SUPABASE_URL,k=process.env.SUPABASE_SERVICE_ROLE_KEY;return u&&k?createClient(u,k,{auth:{persistSession:false}}):null}
+export async function GET(){const s=client();if(!s)return NextResponse.json({error:'서버 설정을 확인해 주세요.'},{status:500});const r=await s.from('discovery_improvement_tasks').select('id,priority,title,status,summary,work_details,completed_at,created_at').eq('project_id',1).order('priority');return r.error?NextResponse.json({error:r.error.message},{status:500}):NextResponse.json({tasks:r.data??[]})}
