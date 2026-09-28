@@ -3,12 +3,21 @@ import {notFound} from 'next/navigation'
 import {createClient} from '@supabase/supabase-js'
 import WebsiteInspector from '../../WebsiteInspector'
 import InquiryActions from './InquiryActions'
+import DiagnosisReportEditor from './DiagnosisReportEditor'
 
 export const dynamic='force-dynamic'
 export const revalidate=0
 
 type Inquiry={id:number;company_name:string;website_url:string;industry:string|null;main_services:string|null;concerns:string[]|null;contact_name:string;phone:string|null;email:string|null;message:string|null;status:string;created_at:string;project_id:number|null}
 const statusLabel:Record<string,string>={diagnosis_pending:'진단 대기',reviewing:'진단·검토 중',proposal:'진행 협의',converted:'프로젝트 전환',closed:'종료'}
+
+async function getReport(id:number){
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
+ if(!url||!key)return null
+ const s=createClient(url,key,{auth:{persistSession:false}})
+ const r=await s.from('discovery_diagnosis_reports').select('title,summary,findings,priorities,proposal,status,public_token').eq('inquiry_id',id).maybeSingle()
+ return r.data as any
+}
 
 async function getInquiry(id:number){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -20,6 +29,7 @@ async function getInquiry(id:number){
 
 export default async function InquiryPage({params}:{params:{id:string}}){
  const inquiry=await getInquiry(Number(params.id)); if(!inquiry)notFound()
+ const report=await getReport(inquiry.id)
  return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-6xl px-5 py-10 md:px-8">
   <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><Link href="/discovery/website-check" className="text-sm font-bold text-[#087A56]">← 상담·진단 목록</Link><p className="mt-5 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Consultation Diagnosis</p><h1 className="mt-1 text-3xl font-extrabold">{inquiry.company_name}</h1><p className="mt-2 text-sm text-gray-500">접수 {new Date(inquiry.created_at).toLocaleString('ko-KR')} · {statusLabel[inquiry.status]||inquiry.status}</p></div></header>
   <section className="mb-6 grid gap-6 lg:grid-cols-[1.3fr_.7fr]">
@@ -37,6 +47,7 @@ export default async function InquiryPage({params}:{params:{id:string}}){
    <InquiryActions id={inquiry.id} status={inquiry.status}/>
   </section>
   <WebsiteInspector url={inquiry.website_url}/>
+  <DiagnosisReportEditor id={inquiry.id} initial={report}/>
   <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">현재 단계에서는 상담·진단 상태만 관리합니다. 실제 진행이 확정된 건만 Discovery 프로젝트로 전환합니다. 자동 전환하지 않습니다.</p></section>
  </div></div>
 }
