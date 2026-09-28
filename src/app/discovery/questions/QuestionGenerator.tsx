@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 type D={id:number;dimension_type:string;dimension_value:string;priority:number}
 type C={question:string;intent:string;mode:string;ingredients:D[];combinationKey:string}
-const allowed=['WHO','FOR_WHOM','WHERE','SERVICE','PURPOSE','PROBLEM','ACTION']
+const allowed=['WHO','FOR_WHOM','WHERE','WHEN','SERVICE','PURPOSE','PROBLEM','CONDITION','PREFERENCE','URGENCY','ACTION']
 const problemCompat:Record<string,string[]>={'검색해도 우리 업체가 잘 나오지 않음':['검색 노출 관리','AI 검색 발견 관리'],'AI가 우리 업체를 잘 알지 못함':['AI 검색 발견 관리','검색 노출 관리'],'홈페이지는 있지만 검색 유입이 적음':['검색 노출 관리','AI 검색 발견 관리','광고·마케팅'],'광고를 중단하면 고객 유입이 줄어듦':['검색 노출 관리','광고·마케팅','AI 검색 발견 관리']}
 const purposeCompat:Record<string,string[]>={'신규 고객 확보':['검색 노출 관리','광고·마케팅','AI 검색 발견 관리'],'검색 노출 개선':['검색 노출 관리','AI 검색 발견 관리'],'AI에서 업체가 발견되도록 하기':['AI 검색 발견 관리','검색 노출 관리'],'온라인 인지도 향상':['검색 노출 관리','AI 검색 발견 관리','광고·마케팅']}
 const list=(a:D[],t:string)=>a.filter(x=>x.dimension_type===t).sort((x,y)=>y.priority-x.priority||x.id-y.id)
@@ -16,16 +16,29 @@ function similarity(a:string,b:string){const A=new Set(norm(a).match(/.{1,2}/g)|
 function hasBatchim(s:string){const c=s.charCodeAt(s.length-1);return c>=0xac00&&c<=0xd7a3&&((c-0xac00)%28)!==0}
 const j=(s:string,pair:'이가'|'은는'|'을를'|'으로로')=>{if(pair==='이가')return s+(hasBatchim(s)?'이':'가');if(pair==='은는')return s+(hasBatchim(s)?'은':'는');if(pair==='을를')return s+(hasBatchim(s)?'을':'를');const c=s.charCodeAt(s.length-1),jong=c>=0xac00&&c<=0xd7a3?(c-0xac00)%28:0;return s+(!jong||jong===8?'로':'으로')}
 function svcFor(a:D[],problem:D|undefined,purpose:D|undefined,n:number){const names=(problem&&problemCompat[problem.dimension_value])||(purpose&&purposeCompat[purpose.dimension_value])||['검색 노출 관리','AI 검색 발견 관리','광고·마케팅'];const z=names.map(v=>a.find(x=>x.dimension_type==='SERVICE'&&x.dimension_value===v)).filter(Boolean) as D[];return z.length?z[n%z.length]:at(a,'SERVICE',n)}
-function sentence(a:D[],mode:string,variant:number){const v=(t:string)=>a.find(x=>x.dimension_type===t)?.dimension_value;const who=v('WHO'),where=v('WHERE'),svc=v('SERVICE'),purpose=v('PURPOSE'),problem=v('PROBLEM'),action=v('ACTION'),target=v('FOR_WHOM')
- const place=where?where+'에서 ':'';const service=svc||'필요한 서비스'
- if(problem){if(variant%3===0)return place+problem+' 상황인데, '+service+'를 이용해 해결할 수 있는 방법이 있나요?';if(variant%3===1)return problem+' 때문에 '+service+'를 찾고 있습니다. 어떤 기준으로 알아보면 좋을까요?';return (target?target+'이 ':'')+problem+' 상황에서 '+service+'를 이용하려면 무엇을 확인해야 하나요?'}
+function sentence(a:D[],mode:string,variant:number){const v=(t:string)=>a.find(x=>x.dimension_type===t)?.dimension_value;const who=v('WHO'),where=v('WHERE'),when=v('WHEN'),svc=v('SERVICE'),purpose=v('PURPOSE'),problem=v('PROBLEM'),action=v('ACTION'),target=v('FOR_WHOM'),condition=v('CONDITION'),preference=v('PREFERENCE'),urgency=v('URGENCY')
+ const place=where?where+'에서 ':'';const service=svc||'필요한 서비스';const context=[when,condition,preference,urgency].filter(Boolean).slice(0,2).join(', ')
+ if(problem){if(variant%3===0)return place+problem+' 상황인데, '+service+'를 이용해 해결할 수 있는 방법이 있나요?'+(context?' 조건은 '+context+'입니다.':'');if(variant%3===1)return problem+' 때문에 '+service+'를 찾고 있습니다. 어떤 기준으로 알아보면 좋을까요?'+(context?' '+context+'인 경우입니다.':'');return (target?target+'이 ':'')+problem+' 상황에서 '+service+'를 이용하려면 무엇을 확인해야 하나요?'+(context?' '+context+'인 경우입니다.':'')}
  if(action?.includes('비교'))return place+service+'를 비교할 때 가격 외에 어떤 조건을 확인해야 하나요?'
  if(action?.includes('가격'))return place+service+'의 요금과 이용 조건은 어떻게 확인하는 것이 좋나요?'
  if(action?.includes('이용 방법'))return place+service+'를 이용하려면 절차와 준비사항이 어떻게 되나요?'
  if(action?.includes('찾기'))return place+service+'를 제공하는 업체나 서비스를 어떻게 찾을 수 있나요?'
  if(purpose)return purpose+'를 위해 '+service+'를 이용하려고 합니다. 어떤 방법이 있나요?'
  return place+(who?who+' 관련 ':'')+service+'를 찾고 있습니다. '+(target?target+'에게 ':'')+'적합한 선택 방법을 알려주세요.'}
-function generate(a:D[],count:number){const out:C[]=[],seen=new Set<string>(),problems=list(a,'PROBLEM'),purposes=list(a,'PURPOSE');for(let r=0;r<360&&out.length<count;r++){const p=problems[r%problems.length],purpose=purposes[(r+1)%purposes.length],mode=r%3===2?'서비스 중심':'문제 중심',svc=svcFor(a,mode==='문제 중심'?p:undefined,purpose,r);const ing=mode==='문제 중심'?clean([at(a,'WHO',r),at(a,'WHERE',r+1),p,svc,purpose]).slice(0,3+r%3):clean([at(a,'WHO',r),at(a,'FOR_WHOM',r+2),at(a,'WHERE',r+1),svc,purpose,at(a,'ACTION',r+3)]).slice(0,4+r%3);const k=key(ing),q=sentence(ing,mode,Math.floor(r/12));if(seen.has(k)||out.some(x=>similarity(x.question,q)>=0.76))continue;seen.add(k);out.push({question:q,intent:mode==='문제 중심'?'문제 인식 → 해결 탐색':'발견/서비스 탐색',mode,ingredients:ing,combinationKey:k})}return out}
+function generate(a:D[],count:number){
+ const out:C[]=[],seen=new Set<string>(),problems=list(a,'PROBLEM'),purposes=list(a,'PURPOSE')
+ for(let r=0;r<480&&out.length<count;r++){
+  const p=problems.length?problems[r%problems.length]:undefined,purpose=purposes.length?purposes[(r+1)%purposes.length]:undefined,svc=svcFor(a,p,purpose,r)
+  const tier=r%3,mode=['기본 질문','상황 질문','롱테일 질문'][tier]
+  const candidates=tier===0?clean([at(a,'WHO',r),at(a,'WHERE',r+1),svc,at(a,'ACTION',r),purpose]):tier===1?clean([at(a,'FOR_WHOM',r),at(a,'WHERE',r+1),at(a,'WHEN',r),svc,p,at(a,'CONDITION',r),purpose]):clean([at(a,'WHO',r),at(a,'FOR_WHOM',r),at(a,'WHERE',r+1),at(a,'WHEN',r),svc,p,at(a,'CONDITION',r),at(a,'PREFERENCE',r),at(a,'URGENCY',r),at(a,'ACTION',r)])
+  const ing=candidates.slice(0,tier===0?3:tier===1?5:6)
+  if(ing.length<3)continue
+  const k=key(ing),q=sentence(ing,mode,Math.floor(r/12))
+  if(seen.has(k)||out.some(x=>similarity(x.question,q)>=0.76))continue
+  seen.add(k);out.push({question:q,intent:p&&ing.includes(p)?'문제 인식 → 해결 탐색':'발견/서비스 탐색',mode,ingredients:ing,combinationKey:k})
+ }
+ return out
+}
 const val=(c:C,t:string)=>c.ingredients.find(x=>x.dimension_type===t)?.dimension_value??null
 export default function QuestionGenerator({dimensions,projectId}:{dimensions:D[];projectId:number}){const router=useRouter();const[count,setCount]=useState(12),[cs,setCs]=useState<C[]>([]),[sel,setSel]=useState<Set<string>>(new Set()),[saving,setSaving]=useState(false),[msg,setMsg]=useState('');const active=useMemo(()=>dimensions.filter(x=>allowed.includes(x.dimension_type)),[dimensions]);const run=()=>{setCs(generate(active,count));setSel(new Set());setMsg('')};const toggle=(k:string)=>{const n=new Set(sel);n.has(k)?n.delete(k):n.add(k);setSel(n)}
  const save=async()=>{const chosen=cs.filter(c=>sel.has(c.combinationKey));if(!chosen.length)return;const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;if(!url||!key){setMsg('Supabase 환경변수를 확인해 주세요.');return}setSaving(true);setMsg('');const supabase=createClient(url,key);const rows=chosen.map(c=>({project_id:projectId,question:c.question,intent:c.intent,who:val(c,'WHO'),for_whom:val(c,'FOR_WHOM'),where_location:val(c,'WHERE'),purpose:val(c,'PURPOSE'),problem:val(c,'PROBLEM'),action:val(c,'ACTION'),service:val(c,'SERVICE'),dimension_count:c.ingredients.length,combination_key:c.combinationKey,is_duplicate:false,is_benchmark:false,status:'saved',notes:c.mode}));const{data:existing,error:readError}=await supabase.from('discovery_questions').select('combination_key').eq('project_id',projectId).in('combination_key',rows.map(r=>r.combination_key));if(readError){setSaving(false);setMsg('저장 전 확인 실패: '+readError.message);return}const existingKeys=new Set((existing??[]).map(x=>x.combination_key));const newRows=rows.filter(r=>!existingKeys.has(r.combination_key));const{error}=newRows.length?await supabase.from('discovery_questions').insert(newRows):{error:null};setSaving(false);if(error){setMsg('저장 실패: '+error.message);return}setMsg(newRows.length+'개 질문을 저장했습니다.'+(rows.length-newRows.length?' 이미 저장된 '+(rows.length-newRows.length)+'개는 건너뛰었습니다.':''));setSel(new Set());router.refresh()}

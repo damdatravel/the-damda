@@ -3,7 +3,7 @@ import {useState} from 'react'
 
 export type CalendarMeasurement={
  id:number;channel:string;is_discovered:boolean;measurement_round:string|null;created_at:string;question_id:number;
- result_text:string|null;source_urls:string|null;notes:string|null;question:string|null
+ result_text:string|null;source_urls:string|string[]|null;notes:string|null;question:string|null
 }
 export type CalendarTask={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
 type RemeasureSchedule={day:number;key:string;label:string}
@@ -50,7 +50,7 @@ export default function ActivityCalendar({projectName,measurements,tasks}:{proje
     <div className="mt-5 grid gap-3 sm:grid-cols-3"><Info label="발견 여부" value={selected.is_discovered?'발견':'미발견'}/><Info label="측정 일시" value={new Date(selected.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}/><Info label="채널" value={selected.channel}/></div>
     <Block label="Benchmark 질문" value={selected.question||`질문 ID ${selected.question_id}`}/>
     <Block label="실제 결과 / 답변" value={selected.result_text||'기록 없음'}/>
-    <Block label="출처 URL" value={selected.source_urls||'기록 없음'} links/>
+    <Block label="출처 URL" value={Array.isArray(selected.source_urls)?selected.source_urls.join('\n'):selected.source_urls||'기록 없음'} links/>
     <Block label="메모" value={selected.notes||'기록 없음'}/>
    </div>
   </div>}

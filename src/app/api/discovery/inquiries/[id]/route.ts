@@ -16,7 +16,9 @@ export async function PATCH(req:Request,{params}:{params:{id:string}}){
    if(done.error)return NextResponse.json({error:done.error.message},{status:500})
    return NextResponse.json(done.data)
   }
-  const created=await s.from('discovery_projects').insert({name:inquiry.data.company_name,website_url:inquiry.data.website_url,industry:inquiry.data.industry,main_services:inquiry.data.main_services,status:'active'}).select('id').single()
+  const {data:diagnosis,error:diagnosisError}=await s.from('discovery_diagnosis_reports').select('summary').eq('inquiry_id',id).maybeSingle()
+  if(diagnosisError)return NextResponse.json({error:'기존 진단 요약 확인 실패: '+diagnosisError.message},{status:500})
+  const created=await s.from('discovery_projects').insert({name:inquiry.data.company_name,website_url:inquiry.data.website_url,industry:inquiry.data.industry,main_services:inquiry.data.main_services,description:diagnosis?.summary||null,status:'active'}).select('id').single()
   if(created.error)return NextResponse.json({error:'프로젝트 생성 실패: '+created.error.message},{status:500})
   const done=await s.from('discovery_inquiries').update({status:'contracted',project_id:created.data.id,updated_at:new Date().toISOString()}).eq('id',id).select('id,status,project_id').single()
   if(done.error){await s.from('discovery_projects').delete().eq('id',created.data.id);return NextResponse.json({error:'상담 건 연결 실패: '+done.error.message},{status:500})}
