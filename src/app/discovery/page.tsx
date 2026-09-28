@@ -1,3 +1,4 @@
+import {requireStaff} from '../../lib/requireStaff'
 import Link from 'next/link'
 import StaffLogoutButton from './StaffLogoutButton'
 import {createClient} from '@supabase/supabase-js'
@@ -18,6 +19,7 @@ async function getData(){
  return{projects:(p.data??[]) as Project[],tasks:(t.data??[]) as Task[],error:p.error?.message??t.error?.message??null}
 }
 export default async function CompanyDashboard(){
+ await requireStaff()
  const{projects,tasks,error}=await getData()
  const today=dayKey(new Date().toISOString())
  const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const base=done[0]?.completed_at;const schedule=base?[7,15,30,45,60,75,90].map(day=>({day,date:addDays(base,day)})):[];const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})

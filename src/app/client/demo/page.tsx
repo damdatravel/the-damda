@@ -1,3 +1,4 @@
+import {requireStaff} from '../../../lib/requireStaff'
 import Link from 'next/link'
 import {createClient} from '@supabase/supabase-js'
 export const dynamic='force-dynamic'
@@ -12,6 +13,7 @@ async function getData(){
  return{project:p.data,benchmarks:q.count??0,measurements:m.data??[],tasks:t.data??[]}
 }
 export default async function ClientDemo(){
+ await requireStaff()
  const{project,benchmarks,measurements,tasks}=await getData()
  const completed=tasks.filter((t:any)=>t.status==='effect_confirmed')
  const base=completed.filter((t:any)=>t.completed_at).sort((a:any,b:any)=>new Date(b.completed_at).getTime()-new Date(a.completed_at).getTime())[0]?.completed_at
