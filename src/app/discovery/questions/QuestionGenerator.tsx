@@ -16,6 +16,10 @@ function problemSituation(value:string){
  if(/어려움$/.test(value))return value.replace(/어려움$/,'어렵다면')
  return value.replace(/(?:라는|다는)? 문제$/,'')+' 때문에 고민이라면'
 }
+function usablePurpose(value:string){
+ const phrase=value.trim()
+ return phrase.length<=20&&!/어디서|어디로|어디든|누구나|모든|것|싶|진단|확인|현재 상태|필요|문제|불편|[가-힣](?:하다|하는|할|되다|되는|할 수)$/.test(phrase)
+}
 function normalizeService(value:string,where?:string,when?:string){
  let service=value.trim()
  if(where)service=service.replace(where,'').trim()
@@ -49,10 +53,10 @@ function generate(a:D[],count:number){
   {intent:'비교/선택 탐색',mode:'상황 질문',write:s=>`${s} 업체마다 제공 범위가 어떻게 다른가요?`},
   {intent:'이용/예약 탐색',mode:'상황 질문',write:s=>`${s} 신청 후 변경이나 취소는 어떻게 하나요?`}
  ]
- if(problems.length)templates.splice(2,0,{intent:'문제 인식 → 해결 탐색',mode:'상황 질문',write:(s,p)=>`${problemSituation(p??'')} ${object(s)} 이용하면 어떤 점을 확인해야 하나요?`})
+ if(problems.length)templates.splice(2,0,{intent:'문제 인식 → 해결 탐색',mode:'상황 질문',write:(s,p)=>`${problemSituation(p??'')} ${object(s)} 이용할 때 무엇을 확인해야 하나요?`})
  for(let r=0;r<count*services.length*4&&out.length<count;r++){
   const template=templates[r%templates.length],service=services[Math.floor(r/templates.length)%services.length],problem=template.intent.startsWith('문제')?problems[Math.floor(r/(templates.length*services.length))%problems.length]:undefined
-  const goal=!problem&&purpose&&[0,3].includes(r%templates.length)&&!/싶|진단|확인|현재 상태|필요|문제|불편/.test(purpose.dimension_value)?purpose:undefined
+  const goal=!problem&&purpose&&r%templates.length===0&&usablePurpose(purpose.dimension_value)?purpose:undefined
   const ingredients=clean([service.dimension,where,when,problem,goal]).filter((x,i,all)=>all.findIndex(v=>v.id===x.id)===i)
   if(ingredients.length<2)continue
   const statement=template.write(service.name,problem?.dimension_value)
