@@ -16,7 +16,7 @@ export async function POST(req:Request){
    {key:'robots',label:'robots.txt에서 가이드 차단 없음',pass:robots.ok&&!new RegExp('Disallow:\\s*'+target.replace(/\//g,'\\/'),'i').test(robots.text),detail:robots.ok?'직접 차단 규칙 없음':'robots.txt 확인 실패'},
    {key:'consultingLink',label:'가이드에서 현재 상태 진단 신청으로 연결',pass:page.text.includes('href="/ai-search/consulting"')||page.text.includes('href="'+origin+'/ai-search/consulting"'),detail:'진단 신청 링크 확인'},
    {key:'measurement',label:'실제 질문 측정·재확인 원칙 명시',pass:page.text.includes('같은 질문')&&page.text.includes('측정'),detail:'측정 원칙 확인'},
-   {key:'safeCopy',label:'AI 추천·노출 보장 표현 없음',pass:!/(AI.{0,12}(노출|추천).{0,8}보장(?!하지|할 수 없)|(노출|추천).{0,8}보장(?!하지|할 수 없))/.test(page.text),detail:'부정형 안전 문구는 제외하고 보장형 표현 검사'}
+   {key:'safeCopy',label:'AI 추천·노출 보장 표현 없음',pass:(()=>{const visible=page.text.replace(/<script[\\s\\S]*?<\\/script>/gi,' ').replace(/<style[\\s\\S]*?<\\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ');const normalized=visible.replace(/보장하지 않습니다|보장하지 않는다|보장할 수 없습니다|보장할 수 없다|보장하는 방법도 없습니다/g,'');return !/(노출|추천)[^.!?]{0,20}보장/.test(normalized)})(),detail:'화면에 보이는 문구에서 부정형 안전 문구를 제거한 뒤 보장 표현 검사'}
   ]
   const passed=checks.every(x=>x.pass),now=new Date().toISOString()
   const task={
