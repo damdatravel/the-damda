@@ -1,6 +1,36 @@
 'use client'
 import Link from 'next/link'
+
 type B={id:number;question:string}
+
 export default function ProjectOnboarding({projectId,benchmarks,measurementCount}:{projectId:number;benchmarks:B[];measurementCount:number}){
  const step=benchmarks.length===0?1:measurementCount===0?2:3
- return <section className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm md:p-6"><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Project Start</p><h2 className="mt-1 text-xl font-extrabold">신규 프로젝트 시작</h2><p className="mt-2 text-sm text-gray-600">질문 후보를 검토해 Benchmark를 확정하고, 현재 상태를 측정한 뒤 개선 분석을 시작합니다.</p><div className="mt-5 grid gap-3 md:grid-cols-3">{[['1','질문 생성 · Benchmark',benchmarks.length?`${benchmarks.length}개 지정됨`:'후보 생성·검토·지정'],['2','Day 0 측정',measurementCount?`${measurementCount}건 기록됨`:'현재 발견 상태 기록'],['3','개선 분석','측정 후 진행','원인·개선과제 검토']].map((x,i)=><div key={x[0]} className={"rounded-xl border p-4 "+(step===i+1?'border-[#0A9B6C] bg-white':'border-gray-200 bg-white/60')}><p className="text-xs font-bold text-[#0A9B6C]">STEP {x[0]}</p><p className="mt-1 font-extrabold">{x[1]}</p><p className="mt-1 text-xs text-gray-500">{x[2]}</p></div>)}</div><div className="mt-5 flex flex-wrap gap-2"><Link href={'/discovery/projects/'+projectId+'/questions'} className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white">{benchmarks.length?'질문 엔진 · Benchmark 검토':'질문 엔진 시작'}</Link>{benchmarks.length>0&&measurementCount===0&&<span className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-gray-600">Benchmark를 최종 확인한 뒤 질문 엔진에서 Day 0 측정을 시작하세요.</span>}{measurementCount>0&&<span className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#087A56]">기초 측정 기록 있음 · 아래에서 Day 0 분석을 진행할 수 있습니다.</span>}</div></section>
+ const cards=[
+  ['1','질문 생성 · Benchmark',benchmarks.length ? benchmarks.length+'개 지정됨' : '후보 생성·검토·지정'],
+  ['2','Day 0 측정',measurementCount ? measurementCount+'건 기록됨' : '현재 발견 상태 기록'],
+  ['3','개선 분석','측정 후 진행']
+ ]
+ return (
+  <section className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm md:p-6">
+   <p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Project Start</p>
+   <h2 className="mt-1 text-xl font-extrabold">신규 프로젝트 시작</h2>
+   <p className="mt-2 text-sm text-gray-600">질문 후보를 검토해 Benchmark를 확정하고, 현재 상태를 측정한 뒤 개선 분석을 시작합니다.</p>
+   <div className="mt-5 grid gap-3 md:grid-cols-3">
+    {cards.map((x,i)=>(
+     <div key={x[0]} className={"rounded-xl border p-4 "+(step===i+1?'border-[#0A9B6C] bg-white':'border-gray-200 bg-white/60')}>
+      <p className="text-xs font-bold text-[#0A9B6C]">STEP {x[0]}</p>
+      <p className="mt-1 font-extrabold">{x[1]}</p>
+      <p className="mt-1 text-xs text-gray-500">{x[2]}</p>
+     </div>
+    ))}
+   </div>
+   <div className="mt-5 flex flex-wrap gap-2">
+    <Link href={'/discovery/projects/'+projectId+'/questions'} className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white">
+     {benchmarks.length?'질문 엔진 · Benchmark 검토':'질문 엔진 시작'}
+    </Link>
+    {benchmarks.length>0&&measurementCount===0&&<span className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-gray-600">Benchmark를 최종 확인한 뒤 질문 엔진에서 Day 0 측정을 시작하세요.</span>}
+    {measurementCount>0&&<span className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#087A56]">기초 측정 기록 있음 · 아래에서 Day 0 분석을 진행할 수 있습니다.</span>}
+   </div>
+  </section>
+ )
+}
