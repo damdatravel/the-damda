@@ -16,7 +16,7 @@ async function getData(){
  const[p,t,i]=await Promise.all([
   s.from('discovery_projects').select('id,name,website_url,status').order('id'),
   s.from('discovery_improvement_tasks').select('project_id,status,completed_at'),
-  s.from('discovery_inquiries').select('id,company_name,website_url,industry,status,created_at').neq('status','converted').neq('status','closed').order('created_at',{ascending:false})
+  s.from('discovery_inquiries').select('id,company_name,website_url,industry,status,created_at').not('status','in','(contracted,converted,closed)').order('created_at',{ascending:false})
  ])
  return{projects:(p.data??[]) as Project[],tasks:(t.data??[]) as Task[],inquiries:(i.data??[]) as Inquiry[],error:p.error?.message??t.error?.message??i.error?.message??null}
 }
