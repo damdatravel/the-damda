@@ -15,7 +15,7 @@ async function getData(projectId:number){
  }
  const[p,d,q]=await Promise.all([
   s.from('discovery_projects').select('id,name,website_url').eq('id',projectId).maybeSingle(),
-  s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value,priority,is_active').eq('project_id',projectId).eq('is_active',true).order('priority',{ascending:false}),
+  s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value,priority,is_active,source,notes').eq('project_id',projectId).order('priority',{ascending:false}),
   s.from('discovery_questions').select('id,question,intent,dimension_count,is_benchmark,status,created_at').eq('project_id',projectId).order('created_at',{ascending:false})
  ])
  return{project:p.data,dimensions:(d.data??[]) as D[],questions:(q.data??[]) as Q[],error:p.error?.message??d.error?.message??q.error?.message??null}
