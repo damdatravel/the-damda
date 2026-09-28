@@ -1,33 +1,33 @@
 import Link from 'next/link'
 import {createClient} from '@supabase/supabase-js'
-import DashboardExplorer from './DashboardExplorer'
-import Day0Analyzer from './Day0Analyzer'
-import {type CalendarMeasurement} from './ActivityCalendar'
 export const dynamic='force-dynamic'
 export const revalidate=0
-type P={id:number;name:string|null;website_url:string|null;industry:string|null;main_services:string|null;target_customer:string|null;service_area:string|null;description:string|null;status:string|null}
-type B={id:number;question:string}
-type T={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
+type Project={id:number;name:string|null;website_url:string|null;status:string|null}
+type Task={project_id:number;status:string;completed_at:string|null}
+function dayKey(iso:string){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(iso))}
+function addDays(iso:string,days:number){const d=new Date(iso);d.setDate(d.getDate()+days);return dayKey(d.toISOString())}
 async function getData(){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
- if(!url||!key)return{project:null as P|null,benchmarks:[] as B[],measurements:[] as CalendarMeasurement[],tasks:[] as T[],error:'Supabase 환경변수를 확인해 주세요.'}
+ if(!url||!key)return{projects:[] as Project[],tasks:[] as Task[],error:'Supabase 환경변수를 확인해 주세요.'}
  const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
- const[p,q,m,t]=await Promise.all([
-  s.from('discovery_projects').select('id,name,website_url,industry,main_services,target_customer,service_area,description,status').eq('id',1).maybeSingle(),
-  s.from('discovery_questions').select('id,question').eq('project_id',1).eq('is_benchmark',true).order('id'),
-  s.from('discovery_measurements').select('id,channel,is_discovered,measurement_round,created_at,question_id,result_text,source_urls,notes').eq('project_id',1).order('created_at',{ascending:false}),
-  s.from('discovery_improvement_tasks').select('id,priority,title,status,summary,work_details,completed_at,created_at').eq('project_id',1).order('priority')
+ const[p,t]=await Promise.all([
+  s.from('discovery_projects').select('id,name,website_url,status').order('id'),
+  s.from('discovery_improvement_tasks').select('project_id,status,completed_at').not('completed_at','is',null)
  ])
- const rows=m.data??[]
- const ids=[...new Set(rows.map((x:any)=>Number(x.question_id)).filter(Boolean))]
- let questionMap=new Map<number,string>()
- let questionError:string|null=null
- if(ids.length){
-  const qr=await s.from('discovery_questions').select('id,question').in('id',ids)
-  questionError=qr.error?.message??null
-  questionMap=new Map((qr.data??[]).map((x:any)=>[Number(x.id),String(x.question)]))
- }
- const mm=rows.map((x:any)=>({...x,question:questionMap.get(Number(x.question_id))??null})) as CalendarMeasurement[]
- return{project:p.data as P|null,benchmarks:(q.data??[]) as B[],measurements:mm,tasks:(t.data??[]) as T[],error:p.error?.message??q.error?.message??m.error?.message??t.error?.message??questionError}
+ return{projects:(p.data??[]) as Project[],tasks:(t.data??[]) as Task[],error:p.error?.message??t.error?.message??null}
 }
-export default async function DiscoveryPage(){const{project,benchmarks,measurements,tasks,error}=await getData();return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-7xl px-5 py-10 md:px-8"><header className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">The Damda Discovery</p><h1 className="text-3xl font-extrabold md:text-4xl">프로젝트 대시보드</h1><p className="mt-2 text-sm text-gray-500">선택한 업체의 질문·측정·개선·재측정 이력을 관리합니다.</p></div><div className="flex flex-wrap gap-2"><Link href="/discovery/company" className="rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-bold">회사 대시보드 ←</Link><Link href="/client/demo" className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-bold text-[#087A56]">고객 화면 미리보기 →</Link><Link href="/discovery/website-check" className="rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-bold">홈페이지 진단 →</Link></div></header>{error&&<div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">DB 연결 확인 필요: {error}</div>}{project&&<section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Project</p><h2 className="mt-1 text-xl font-bold">{project.name}</h2><p className="mt-2 text-sm text-gray-500">{project.description||'프로젝트 설명이 아직 없습니다.'}</p></div>{project.website_url&&<span className="text-sm text-gray-500">{project.website_url}</span>}</div><div className="mt-4 grid gap-3 text-sm md:grid-cols-4"><div><span className="text-gray-400">업종</span><p className="font-semibold">{project.industry||'-'}</p></div><div><span className="text-gray-400">주요 서비스</span><p className="font-semibold">{project.main_services||'-'}</p></div><div><span className="text-gray-400">대상 고객</span><p className="font-semibold">{project.target_customer||'-'}</p></div><div><span className="text-gray-400">서비스 지역</span><p className="font-semibold">{project.service_area||'-'}</p></div></div></section>}<Day0Analyzer/><DashboardExplorer projectName={project?.name??'프로젝트'} measurements={measurements} benchmarks={benchmarks} tasks={tasks}/><footer className="mt-8 text-center text-xs text-gray-400">Discovery Project Dashboard · Supabase Connected</footer></div></div>}
+export default async function CompanyDashboard(){
+ const{projects,tasks,error}=await getData()
+ const today=dayKey(new Date().toISOString())
+ const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const base=done[0]?.completed_at;const schedule=base?[7,30,60,90].map(day=>({day,date:addDays(base,day)})):[];const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})
+ const due=rows.filter(r=>r.next).sort((a,b)=>a.next!.date.localeCompare(b.next!.date))
+ return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-7xl px-5 py-10 md:px-8">
+  <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">The Damda Discovery</p><h1 className="text-3xl font-extrabold md:text-4xl">회사 대시보드</h1><p className="mt-2 text-sm text-gray-500">모든 고객 프로젝트의 다음 작업과 운영 상태를 한 곳에서 확인합니다.</p></div><Link href="/discovery/projects/1" className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white">더담다 프로젝트 열기 →</Link></header>
+  {error&&<div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">DB 연결 확인 필요: {error}</div>}
+  <section className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4"><Stat label="관리 프로젝트" value={rows.length}/><Stat label="재측정 예정" value={due.length}/><Stat label="완료 개선 작업" value={tasks.filter(t=>t.status==='effect_confirmed').length}/><Stat label="오늘 재측정" value={due.filter(r=>r.next?.date===today).length}/></section>
+  <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]"><section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6"><h2 className="text-xl font-bold">다음 작업</h2><p className="mt-1 text-xs text-gray-400">가까운 재측정 일정부터 표시합니다.</p><div className="mt-5 space-y-3">{due.length?due.slice(0,8).map(r=><div key={r.id} className="rounded-xl bg-amber-50 p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-extrabold">{r.name||'프로젝트'}</p><p className="mt-1 text-sm text-amber-900">Day {r.next!.day} 재측정 · {r.next!.date}</p></div>{r.id===1&&<Link href="/discovery/projects/1" className="text-xs font-bold text-[#087A56]">열기 →</Link>}</div></div>):<p className="rounded-xl border border-dashed p-5 text-sm text-gray-500">예정된 재측정이 없습니다.</p>}</div></section>
+  <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6"><h2 className="text-xl font-bold">관리 프로젝트</h2><p className="mt-1 text-xs text-gray-400">회사 운영 화면 아래에 프로젝트별 관리 화면이 연결됩니다.</p><div className="mt-5 space-y-3">{rows.map(r=><div key={r.id} className="rounded-xl border border-gray-200 p-4"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-extrabold">{r.name||'프로젝트'}</p><p className="mt-1 text-xs text-gray-400">{r.website_url||'웹사이트 미등록'} · 개선 완료 {r.completed}건</p><p className="mt-2 text-sm text-gray-600">{r.next?`다음 일정: Day ${r.next.day} · ${r.next.date}`:'다음 재측정 일정 없음'}</p></div><div className="flex gap-2">{r.id===1?<><Link href="/discovery/projects/1" className="rounded-lg bg-[#0A0F1E] px-3 py-2 text-xs font-bold text-white">관리</Link><Link href="/client/demo" className="rounded-lg border px-3 py-2 text-xs font-bold">고객 화면</Link></>:<span className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-400">프로젝트 화면 준비 중</span>}</div></div></div>)}</div></section></div>
+  <section className="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-5"><p className="text-sm font-bold">운영 원칙</p><p className="mt-2 text-sm leading-relaxed text-gray-500">회사 대시보드는 전체 고객과 오늘 할 일을 관리하고, 프로젝트 대시보드는 실제 진단·Benchmark·측정·개선·재측정을 수행합니다. 고객용 대시보드는 내부 승인·오류·기술 정보는 숨기고 결과와 진행 상황만 제공합니다.</p></section>
+ </div></div>
+}
+function Stat({label,value}:{label:string;value:number}){return <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-gray-500">{label}</p><p className="mt-2 text-4xl font-extrabold">{value}</p></article>}
