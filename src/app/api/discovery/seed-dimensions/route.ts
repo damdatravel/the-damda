@@ -50,6 +50,8 @@ export async function POST(req:Request){
   const keys=new Set((existing??[]).map((x:any)=>`${x.dimension_type}|${x.dimension_value}`))
   const fresh=ingredients.filter(x=>{const k=`${x.type}|${x.value}`;if(keys.has(k))return false;keys.add(k);return true}).map((x,i)=>({project_id:id,dimension_type:x.type,dimension_value:x.value,priority:100-i,is_active:true,source:x.source,notes:`AI Source Profile · 근거: ${x.evidence}`}))
   if(fresh.length){const {error}=await s.from('discovery_question_dimensions').insert(fresh);if(error)return NextResponse.json({error:error.message},{status:500})}
-  return NextResponse.json({ok:true,added:fresh.length,total:(existing?.length??0)+fresh.length,profile:ingredients})
+  const {data:dimensions,error:readError}=await s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value,priority,is_active').eq('project_id',id).eq('is_active',true).order('priority',{ascending:false})
+  if(readError)return NextResponse.json({error:'저장 후 질문 재료 조회 실패: '+readError.message},{status:500})
+  return NextResponse.json({ok:true,added:fresh.length,total:(existing?.length??0)+fresh.length,profile:ingredients,dimensions:dimensions??[]})
  }catch(e:any){return NextResponse.json({error:e?.message||'질문 재료 분석 중 오류가 발생했습니다.'},{status:500})}
 }
