@@ -28,7 +28,7 @@ export async function GET(){
  if(!base)return new NextResponse('No completed improvement cycle',{status:404})
  const project=p.data?.name||'Discovery Project'
  const baseKey=seoulDate(base)
- const events=[7,30,60,90].map(day=>{
+ const events=[7,15,30,45,60,75,90].map(day=>{
   const start=addDays(baseKey,day),end=addDays(start,1)
   return [
    'BEGIN:VEVENT',
