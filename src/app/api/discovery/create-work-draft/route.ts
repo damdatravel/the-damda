@@ -8,9 +8,11 @@ export async function POST(req:Request){
   const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   if(!apiKey||!url||!key)return NextResponse.json({error:'API 환경변수를 확인해 주세요.'},{status:500})
   const body=await req.json()
+  const projectId=Number(body?.projectId)
+  if(!Number.isInteger(projectId)||projectId<1)return NextResponse.json({error:'올바른 프로젝트가 아닙니다.'},{status:400})
   if(!body?.title||!body?.action)return NextResponse.json({error:'승인된 개선 과제 정보가 없습니다.'},{status:400})
   const s=createClient(url,key)
-  const {data:p,error}=await s.from('discovery_projects').select('name,website_url,industry,main_services,target_customer,service_area,description').eq('id',1).single()
+  const {data:p,error}=await s.from('discovery_projects').select('name,website_url,industry,main_services,target_customer,service_area,description').eq('id',projectId).single()
   if(error)return NextResponse.json({error:error.message},{status:500})
   const prompt=`너는 The Damda Discovery의 실행 작업 설계자다.
 회사 정보: ${JSON.stringify(p)}
