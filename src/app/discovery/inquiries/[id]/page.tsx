@@ -44,10 +44,10 @@ export default async function InquiryPage({params}:{params:{id:string}}){
    {inquiry.concerns?.length?<div className="mt-6"><p className="text-sm font-bold">현재 고민</p><div className="mt-2 flex flex-wrap gap-2">{inquiry.concerns.map(x=><span key={x} className="rounded-full bg-gray-100 px-3 py-1 text-xs">{x}</span>)}</div></div>:null}
    {inquiry.message&&<div className="mt-6"><p className="text-sm font-bold">추가 전달 내용</p><p className="mt-2 whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm leading-6 text-gray-600">{inquiry.message}</p></div>}
    </div>
-   <InquiryActions id={inquiry.id} status={inquiry.status}/>
+   <InquiryActions id={inquiry.id} status={inquiry.status} projectId={inquiry.project_id}/>
   </section>
   <WebsiteInspector url={inquiry.website_url}/>
   <DiagnosisReportEditor id={inquiry.id} initial={report}/>
-  <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">현재 단계에서는 상담·진단 상태만 관리합니다. 실제 진행이 확정된 건만 Discovery 프로젝트로 전환합니다. 자동 전환하지 않습니다.</p></section>
+  <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">{inquiry.project_id?`계약 완료 · 관리 프로젝트 #${inquiry.project_id}로 연결되었습니다.`:'계약 완료 시 이 상담 정보를 바탕으로 관리 프로젝트가 자동 생성되고 상담 건과 연결됩니다.'}</p></section>
  </div></div>
 }
