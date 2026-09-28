@@ -19,7 +19,7 @@ async function getData(){
 export default async function CompanyDashboard(){
  const{projects,tasks,error}=await getData()
  const today=dayKey(new Date().toISOString())
- const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const base=done[0]?.completed_at;const schedule=base?[7,30,60,90].map(day=>({day,date:addDays(base,day)})):[];const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})
+ const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const base=done[0]?.completed_at;const schedule=base?[7,15,30,45,60,75,90].map(day=>({day,date:addDays(base,day)})):[];const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})
  const due=rows.filter(r=>r.next).sort((a,b)=>a.next!.date.localeCompare(b.next!.date))
  return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-7xl px-5 pb-10 pt-16 md:px-8 md:pt-20">
   <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">The Damda Discovery</p><h1 className="text-3xl font-extrabold md:text-4xl">회사 대시보드</h1><p className="mt-2 text-sm text-gray-500">모든 고객 프로젝트의 다음 작업과 운영 상태를 한 곳에서 확인합니다.</p></div><Link href="/discovery/projects/1" className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white">더담다 프로젝트 열기 →</Link></header>
