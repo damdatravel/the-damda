@@ -64,3 +64,30 @@ values (
 on conflict(project_id,priority) do update set
  title=excluded.title,status=excluded.status,summary=excluded.summary,work_details=excluded.work_details,
  completion_criteria=excluded.completion_criteria,updated_at=now();
+
+-- V0.3: improvement #3 AI business discovery preparation guide
+insert into public.discovery_improvement_tasks(project_id,priority,title,status,summary,work_details,completion_criteria)
+values (
+  1,3,'AI에 업체가 잘 나오게 하는 준비 페이지','in_progress',
+  'AI에서 업체가 잘 발견되지 않을 때 준비할 공개 정보와 실제 질문 기반 측정 원칙을 안내하는 가이드를 제작하고 기술 조건을 검증합니다.',
+  array[
+    '/guide/ai-business-discovery 신규 페이지 제작',
+    '업체 설명·서비스·고객 질문·신뢰 정보·공개 텍스트 등 기본 준비 항목 구성',
+    '특정 AI 추천이나 노출을 보장하지 않는 안전한 표현 적용',
+    '실제 고객 질문으로 현재 상태를 측정하고 같은 질문으로 재확인하는 원칙 명시',
+    'sitemap에 가이드 URL 추가',
+    '가이드에서 현재 상태 진단 신청으로 연결'
+  ],
+  '[
+    {"key":"page","label":"AI 발견 준비 가이드가 정상 응답"},
+    {"key":"metadata","label":"title과 description 존재"},
+    {"key":"sitemap","label":"sitemap에 가이드 URL 포함"},
+    {"key":"robots","label":"robots.txt에서 가이드 차단 없음"},
+    {"key":"consultingLink","label":"가이드에서 현재 상태 진단 신청으로 연결"},
+    {"key":"measurement","label":"실제 질문 측정·재확인 원칙 명시"},
+    {"key":"safeCopy","label":"AI 추천·노출 보장 표현 없음"}
+  ]'::jsonb
+)
+on conflict(project_id,priority) do update set
+ title=excluded.title,status=excluded.status,summary=excluded.summary,work_details=excluded.work_details,
+ completion_criteria=excluded.completion_criteria,updated_at=now();
