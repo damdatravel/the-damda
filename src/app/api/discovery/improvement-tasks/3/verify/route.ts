@@ -19,8 +19,22 @@ export async function POST(req:Request){
    {key:'safeCopy',label:'AI 추천·노출 보장 표현 없음',pass:!/(AI.{0,12}(노출|추천).{0,8}보장|(노출|추천).{0,8}보장)/.test(page.text),detail:'보장형 표현 검사'}
   ]
   const passed=checks.every(x=>x.pass),now=new Date().toISOString()
-  const upd:any={verification_result:{passed,checks,origin},verified_at:now,updated_at:now};if(passed)upd.status='completed'
-  const q=await s.from('discovery_improvement_tasks').update(upd).eq('project_id',1).eq('priority',3).select('id,status,verification_result,verified_at').single()
+  const task={
+   project_id:1,priority:3,title:'AI에 업체가 잘 나오게 하는 준비 페이지',
+   status:passed?'completed':'in_progress',
+   summary:'AI에서 업체가 잘 발견되지 않을 때 준비할 공개 정보와 실제 질문 기반 측정 원칙을 안내하는 가이드를 제작하고 기술 조건을 검증합니다.',
+   work_details:[
+    '/guide/ai-business-discovery 신규 페이지 제작',
+    '업체 설명·서비스·고객 질문·신뢰 정보·공개 텍스트 등 기본 준비 항목 구성',
+    '특정 AI 추천이나 노출을 보장하지 않는 안전한 표현 적용',
+    '실제 고객 질문으로 현재 상태를 측정하고 같은 질문으로 재확인하는 원칙 명시',
+    'sitemap에 가이드 URL 추가',
+    '가이드에서 현재 상태 진단 신청으로 연결'
+   ],
+   completion_criteria:checks.map(({key,label})=>({key,label})),
+   verification_result:{passed,checks,origin},verified_at:now,updated_at:now
+  }
+  const q=await s.from('discovery_improvement_tasks').upsert(task,{onConflict:'project_id,priority'}).select('id,status,verification_result,verified_at').single()
   if(q.error)return NextResponse.json({error:q.error.message},{status:500})
   return NextResponse.json({passed,checks,task:q.data})
  }catch(e:any){return NextResponse.json({error:e.message||'검증 실패'},{status:500})}
