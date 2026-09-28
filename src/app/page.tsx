@@ -14,8 +14,8 @@ const jsonLd = {
   name: '주식회사 더담다',
   alternateName: 'The Damda Inc.',
   url: 'https://the-damda.co.kr',
-  logo: 'https://the-damda.co.kr/images/yeongjongdo.jpg',
-  description: '사람의 시간을 담아 가치를 만드는 솔루션 기업 — 더담다의 모든 사업은 하나의 질문에서 시작합니다.',
+  logo: 'https://the-damda.co.kr/damda-logo1.png',
+  description: '주식회사 더담다는 광고·마케팅과 검색·AI 발견 관리 서비스를 제공하고, 담다트래블·여는날·스퀴즈빈 등 자체 사업을 기획·운영하는 시간 솔루션 기업입니다.',
   address: {
     '@type': 'PostalAddress',
     streetAddress: '영종대로162번길 20, 305호',
@@ -32,15 +32,42 @@ const jsonLd = {
     'https://www.damdatravel.com',
     'https://yeonunnal.com',
   ],
+  knowsAbout: ['광고·마케팅', '검색·AI 발견 관리', '디지털 서비스 기획·개발'],
+}
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: '주식회사 더담다',
+  alternateName: 'The Damda',
+  url: 'https://the-damda.co.kr',
+  inLanguage: 'ko-KR',
+}
+
+const faqItems = [
+  { q: '더담다는 어떤 회사인가요?', a: '주식회사 더담다는 사람의 시간을 더 가치 있게 만드는 것을 목표로 광고·마케팅, 검색·AI 발견 관리, 디지털 서비스 기획·개발과 자체 사업을 운영하는 기업입니다.' },
+  { q: '어떤 서비스를 제공하나요?', a: '고객사에는 광고·마케팅과 검색·AI 발견 관리, 디지털 서비스 기획·개발을 제공합니다. 담다트래블, 여는날, 스퀴즈빈은 더담다가 기획·운영하는 자체 사업입니다.' },
+  { q: '검색·AI 발견 관리는 무엇인가요?', a: '고객이 실제로 묻는 질문을 기준으로 검색과 AI에서 현재 발견 상태를 측정하고, 홈페이지와 공개 정보에서 필요한 부분을 개선한 뒤 같은 기준으로 다시 측정하는 서비스입니다.' },
+  { q: '홈페이지가 없어도 상담할 수 있나요?', a: '가능합니다. 현재 온라인 정보와 사업 상황을 먼저 확인한 뒤 홈페이지 신규 제작, 부분 개편 또는 기존 홈페이지 활용 중 필요한 범위를 협의합니다.' },
+  { q: '문의는 어떻게 하나요?', a: '일반 회사·파트너십 문의는 문의하기 페이지에서, 검색·AI 발견 관리 진단은 해당 서비스의 현재 상태 진단 신청 페이지에서 접수할 수 있습니다.' },
+]
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map(item => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
 }
 
 export default function HomePage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {[jsonLd, websiteJsonLd, faqJsonLd].map((data, index) => (
+        <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+      ))}
       {/* HERO */}
       <section className="min-h-screen bg-[#0A0F1E] flex items-center relative overflow-hidden">
         <div
@@ -318,6 +345,39 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+
+      {/* COMPANY & SERVICE CLARITY */}
+      <section className="py-24 bg-[#F8FAFB]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+              <p className="text-[#0A9B6C] text-sm font-semibold tracking-widest uppercase mb-4">What We Do</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-[#0A0F1E] mb-6">고객에게 제공하는 서비스와<br />더담다의 자체 사업을 구분합니다.</h2>
+              <p className="text-gray-600 leading-7 mb-5">더담다는 고객사에 <b>광고·마케팅</b>, <b>검색·AI 발견 관리</b>, <b>디지털 서비스 기획·개발</b>을 제공합니다.</p>
+              <p className="text-gray-600 leading-7">담다트래블, 여는날, 스퀴즈빈은 고객에게 판매하는 대행 서비스 목록이 아니라 더담다가 직접 기획·운영하거나 추진하는 자체 사업입니다.</p>
+            </div>
+            <div className="rounded-3xl bg-white border border-gray-200 p-8">
+              <p className="font-extrabold text-lg mb-5">문의 경로</p>
+              <div className="space-y-4 text-sm leading-6 text-gray-600">
+                <p><b className="text-[#0A0F1E]">회사·파트너십 문의</b><br />사업 협력이나 일반 문의는 회사 문의 페이지에서 접수합니다.</p>
+                <Link href="/contact" className="inline-block font-bold text-[#0A9B6C]">일반 문의하기 →</Link>
+                <p className="pt-3"><b className="text-[#0A0F1E]">검색·AI 발견 관리 진단</b><br />현재 홈페이지와 공개 정보의 발견 상태를 확인하려면 진단 신청을 이용합니다.</p>
+                <Link href="/ai-search/consulting" className="inline-block font-bold text-[#0A9B6C]">현재 상태 진단 신청 →</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <p className="text-[#0A9B6C] text-sm font-semibold tracking-widest uppercase mb-4">FAQ</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[#0A0F1E] mb-10">더담다를 이해하기 위한 기본 질문</h2>
+          <div className="space-y-4">{faqItems.map(item => <details key={item.q} className="rounded-2xl border border-gray-200 p-6"><summary className="cursor-pointer font-extrabold">{item.q}</summary><p className="mt-4 text-gray-600 leading-7">{item.a}</p></details>)}</div>
         </div>
       </section>
 
