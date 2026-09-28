@@ -11,7 +11,7 @@ function dayKey(iso:string){return new Intl.DateTimeFormat('en-CA',{timeZone:'As
 function addDays(iso:string,days:number){const d=new Date(iso);d.setDate(d.getDate()+days);return dayKey(d.toISOString())}
 async function getData(){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
- if(!url||!key)return{projects:[] as Project[],tasks:[] as Task[],error:'Supabase 환경변수를 확인해 주세요.'}
+ if(!url||!key)return{projects:[] as Project[],tasks:[] as Task[],inquiries:[] as Inquiry[],error:'Supabase 환경변수를 확인해 주세요.'}
  const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
  const[p,t,i]=await Promise.all([
   s.from('discovery_projects').select('id,name,website_url,status').order('id'),
