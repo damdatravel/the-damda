@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
-const allowed=new Set(['diagnosis_pending','reviewing','proposal','closed'])
+const allowed=new Set(['diagnosis_pending','reviewing','proposal','customer_delivery','quote_drafting','quote_ready','quote_sent','contracted','closed'])
 export async function PATCH(req:Request,{params}:{params:{id:string}}){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
  if(!url||!key)return NextResponse.json({error:'서버 설정을 확인해 주세요.'},{status:500})

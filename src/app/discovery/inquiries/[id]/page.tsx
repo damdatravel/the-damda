@@ -9,7 +9,7 @@ export const dynamic='force-dynamic'
 export const revalidate=0
 
 type Inquiry={id:number;company_name:string;website_url:string;industry:string|null;main_services:string|null;concerns:string[]|null;contact_name:string;phone:string|null;email:string|null;message:string|null;status:string;created_at:string;project_id:number|null}
-const statusLabel:Record<string,string>={diagnosis_pending:'진단 대기',reviewing:'진단·검토 중',proposal:'진행 협의',converted:'프로젝트 전환',closed:'종료'}
+const statusLabel:Record<string,string>={diagnosis_pending:'진단 대기',reviewing:'진단·검토 중',proposal:'진행 협의',customer_delivery:'고객 전달',quote_drafting:'견적서 작성 중',quote_ready:'견적서 작성 완료',quote_sent:'견적서 전달 완료',contracted:'계약 완료',converted:'프로젝트 전환',closed:'상담 종료'}
 
 async function getReport(id:number){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -30,7 +30,7 @@ async function getInquiry(id:number){
 export default async function InquiryPage({params}:{params:{id:string}}){
  const inquiry=await getInquiry(Number(params.id)); if(!inquiry)notFound()
  const report=await getReport(inquiry.id)
- return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-6xl px-5 py-10 md:px-8">
+ return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-6xl px-5 pb-10 pt-24 md:px-8 md:pt-28">
   <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Consultation Diagnosis</p><h1 className="mt-1 text-3xl font-extrabold">{inquiry.company_name}</h1><p className="mt-2 text-sm text-gray-500">접수 {new Date(inquiry.created_at).toLocaleString('ko-KR')} · {statusLabel[inquiry.status]||inquiry.status}</p></div><Link href="/discovery" className="inline-flex items-center justify-center rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90">회사 대시보드로 돌아가기 →</Link></header>
   <section className="mb-6 grid gap-6 lg:grid-cols-[1.3fr_.7fr]">
    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Inquiry</p><h2 className="mt-1 text-xl font-extrabold">접수 정보</h2><dl className="mt-5 grid gap-4 text-sm md:grid-cols-2">
