@@ -7,7 +7,7 @@ const services = [
   { label: '여는날', href: 'https://yeonunnal.com', external: true },
   { label: '담다트래블', href: 'https://www.damdatravel.com', external: true },
   { label: '스퀴즈빈', href: '/squeeze-bin', external: false },
-  { label: 'AI 검색 최적화', href: '/ai-search', external: false },
+  { label: '디스커버리', href: '/ai-search', external: false },
 ]
 
 export default function Header() {
