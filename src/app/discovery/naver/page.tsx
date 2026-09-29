@@ -12,7 +12,7 @@ export default async function NaverDashboard(){
  let projects:Project[]=[],history:History[]=[],error:string|null=null
  if(url&&key){
   const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
-  const [p,h]=await Promise.all([s.from('discovery_projects').select('id,name,website_url').order('id'),s.from('discovery_analysis_history').select('project_id,measurement_round,created_at').in('measurement_round',['Naver','Naver Approved']).order('created_at',{ascending:false}).limit(1000)])
+  const [p,h]=await Promise.all([s.from('discovery_projects').select('id,name,website_url').eq('naver_management',true).order('id'),s.from('discovery_analysis_history').select('project_id,measurement_round,created_at').in('measurement_round',['Naver','Naver Approved']).order('created_at',{ascending:false}).limit(1000)])
   projects=p.data||[];history=h.data||[];error=p.error?.message??h.error?.message??null
  }else error='Supabase 환경변수를 확인해 주세요.'
  const rows=projects.map(project=>{const items=history.filter(item=>item.project_id===project.id);return {...project,diagnoses:items.filter(item=>item.measurement_round==='Naver').length,approved:items.filter(item=>item.measurement_round==='Naver Approved').length,latest:items[0]?.created_at||null}})

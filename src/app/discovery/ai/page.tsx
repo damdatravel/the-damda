@@ -17,7 +17,7 @@ export default async function AiManagement(){
  if(url&&key){
   const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
   const [p,t,q,m]=await Promise.all([
-   s.from('discovery_projects').select('id,name,website_url').order('id'),
+   s.from('discovery_projects').select('id,name,website_url').eq('ai_management',true).order('id'),
    s.from('discovery_improvement_tasks').select('project_id,status,completed_at'),
    s.from('discovery_questions').select('project_id').eq('is_benchmark',true),
    s.from('discovery_measurements').select('project_id').eq('measurement_round','Day 0')
