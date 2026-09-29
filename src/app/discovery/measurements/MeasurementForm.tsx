@@ -30,7 +30,7 @@ export default function MeasurementForm({questionId,question,projectId,initialCh
   <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
    <p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Benchmark Question</p>
    <h2 className="mt-2 text-xl font-extrabold leading-relaxed">{question}</h2>
-   <p className="mt-2 text-sm text-gray-500">ChatGPT 실제 화면이나 선택한 검색·AI 채널에서 이 질문의 결과를 직접 확인해 기록합니다. OpenAI API 웹 검색 자동 측정과는 별도 결과입니다.</p>
+   <p className="mt-2 text-sm text-gray-500">Day 0에서는 홈페이지를 수정하기 전 현재 상태를 그대로 기록합니다.</p>
   </section>
   <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
    <div className="grid gap-5 md:grid-cols-2">

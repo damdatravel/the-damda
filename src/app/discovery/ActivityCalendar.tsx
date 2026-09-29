@@ -8,7 +8,7 @@ export type CalendarMeasurement={
 export type CalendarTask={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
 type RemeasureSchedule={day:number;key:string;label:string}
 function dayKey(iso:string){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(iso))}
-function shortChannel(c:string){return c==='Google Search'?'Google':c==='Naver Search'?'Naver':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI API 웹 검색':'Gemini'===c?'Gemini':c}
+function shortChannel(c:string){return c==='Google Search'?'Google':c==='Naver Search'?'Naver':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI Web':'Gemini'===c?'Gemini':c}
 function dateLabel(key:string){const[y,m,d]=key.split('-').map(Number);return `${m}월 ${d}일 활동 기록`}
 export default function ActivityCalendar({projectName,measurements,tasks}:{projectName:string;measurements:CalendarMeasurement[];tasks:CalendarTask[]}){
  const[selectedTask,setSelectedTask]=useState<CalendarTask|null>(null)

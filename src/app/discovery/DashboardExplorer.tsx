@@ -5,7 +5,7 @@ import ActivityCalendar,{type CalendarMeasurement} from './ActivityCalendar'
 type Benchmark={id:number;question:string}
 type WorkTask={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
 type Props={projectName:string;measurements:CalendarMeasurement[];benchmarks:Benchmark[];tasks:WorkTask[]}
-function shortChannel(c:string){return c==='Google Search'?'Google':c==='Naver Search'?'Naver':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI API 웹 검색':c}
+function shortChannel(c:string){return c==='Google Search'?'Google':c==='Naver Search'?'Naver':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI Web':c}
 const channelGroups=[{label:'Core AI',names:['OpenAI Web Search API','ChatGPT','Gemini']},{label:'Search',names:['Google Search','Naver Search']},{label:'Extended AI',names:['Google AI','Perplexity','Claude','Copilot']}]
 function when(iso:string){return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}
 
