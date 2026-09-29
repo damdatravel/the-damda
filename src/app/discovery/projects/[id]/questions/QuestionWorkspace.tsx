@@ -14,6 +14,6 @@ export default function QuestionWorkspace({projectId,initialDimensions}:{project
    <DimensionSeeder projectId={projectId} onDimensions={setDimensions}/>
   </section>
   {dimensions.length>0&&<DimensionReview projectId={projectId} dimensions={dimensions} onDimensions={setDimensions}/>}
-  {dimensions.some(x=>x.is_active)?<QuestionGenerator dimensions={dimensions.filter(x=>x.is_active)} projectId={projectId} ai/>:<section className="rounded-xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-600">활성 질문 재료가 없습니다. 위에서 AI Source Profile을 추출해 주세요.</section>}
+  {dimensions.some(x=>x.is_active)?<QuestionGenerator dimensions={dimensions.filter(x=>x.is_active)} projectId={projectId}/>:<section className="rounded-xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-600">활성 질문 재료가 없습니다. 위에서 AI Source Profile을 추출해 주세요.</section>}
  </>
 }

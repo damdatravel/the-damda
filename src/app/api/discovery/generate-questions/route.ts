@@ -29,7 +29,7 @@ export async function POST(req:Request){
 프로젝트: ${JSON.stringify(project)}
 검토된 재료: ${JSON.stringify(dimensions)}
 ${count}개 후보를 JSON 객체 {"questions":[{"question":"...","intent":"발견/서비스 탐색","ingredientIds":[1,2,3]}]} 형식으로만 반환한다.
-규칙: 업종과 고객 상황에 맞게 질문을 쓴다. 광고 문구를 반복하거나 서비스명 전체를 모든 질문 앞에 붙이지 않는다. 의미가 다른 질문을 만들고 같은 의도의 바꿔 쓰기는 피한다. 발견, 문제 해결, 비교, 가격/조건, 이용/예약 중 실제 자료와 관련 있는 의도를 골고루 다룬다. 가격/예약 방식/가능 여부는 자료에 없는 사실로 단정하지 않고 물음으로만 표현한다. 사업자를 찾는 고객의 질문이어야 하며 검색 노출 상담사의 고민을 다른 업종 고객의 고민으로 혼동하지 않는다. 서비스는 제공된 SERVICE에서 고르고 장소·시간·고객 등 구체적인 조건이 있으면 해당 재료의 id를 연결한다. 질문마다 서로 다른 종류의 재료 2개 이상을 사용한다. 장소·시간이 없어도 지어내지 않는다. ingredientIds는 반드시 실제 재료 id만 사용한다. 가능한 의도: ${[...intents].join(', ')}.`
+규칙: 업종과 고객 상황에 맞게 실제 소비자가 자연스럽게 말할 질문을 쓴다. 먼저 서로 다른 재료를 조합해 소비자 상황과 질문 의도를 정하고, 그 뜻을 짧고 자연스러운 문장으로 작성한다. 재료 문구를 이어 붙이거나 같은 서비스명·장소·광고 문구로 모든 질문을 시작하지 않는다. '어디서든 어디로든' 같은 슬로건을 되풀이하지 않는다. 서로 다른 상황과 답을 요구하는 질문을 우선하고 같은 의도의 어순 변경이나 단어만 바꾼 질문은 만들지 않는다. 문제 인식, 발견, 비교, 가격/조건, 이용/예약 중 실제 자료와 관련 있는 의도를 골고루 다루되 근거 없는 의도는 억지로 채우지 않는다. 문제 인식 질문은 고객이 실제 겪는 문제일 때만 만든다. 가격/예약 방식/가능 여부는 자료에 없는 사실로 단정하지 않고 물음으로만 표현한다. 사업자를 찾는 고객의 질문이어야 하며 검색 노출 상담사의 고민을 다른 업종 고객의 고민으로 혼동하지 않는다. 서비스는 제공된 SERVICE에서 고르고 장소·시간·고객 등 구체적인 조건이 있으면 해당 재료의 id를 연결한다. 질문마다 서로 다른 종류의 재료 2개 이상을 사용한다. 장소·시간이 없어도 지어내지 않는다. ingredientIds는 반드시 실제 재료 id만 사용한다. 가능한 의도: ${[...intents].join(', ')}.`
   const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:prompt})})
   const raw=await response.json()
   if(!response.ok)return NextResponse.json({error:raw?.error?.message||'질문 생성 오류'},{status:502})
