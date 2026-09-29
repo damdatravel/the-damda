@@ -17,31 +17,35 @@ export async function POST(req:Request){
   const [{data:p},{data:b},{data:m,error:me}]=await Promise.all([
    s.from('discovery_projects').select('name,website_url,industry,main_services,target_customer,service_area,description').eq('id',projectId).single(),
    s.from('discovery_questions').select('id,question').eq('project_id',projectId).eq('is_benchmark',true).order('id'),
-   s.from('discovery_measurements').select('question_id,channel,is_discovered,result_text,source_urls,created_at').eq('project_id',projectId).eq('measurement_round','Day 0').order('created_at',{ascending:false})
+   s.from('discovery_measurements').select('question_id,channel,is_discovered,result_text,source_urls,notes,created_at').eq('project_id',projectId).eq('measurement_round','Day 0').order('created_at',{ascending:false})
   ])
   if(me)return NextResponse.json({error:me.message},{status:500})
   if(!p)return NextResponse.json({error:'프로젝트를 찾지 못했습니다.'},{status:404})
   const latest=new Map<string,any>();for(const x of m??[]){const key=`${x.question_id}:${x.channel}`;if(!latest.has(key))latest.set(key,x)}
   const rows=(b??[]).map(q=>({question:q.question,measurements:[...latest.entries()].filter(([key])=>key.startsWith(`${q.id}:`)).map(([,value])=>value)}))
   if(!rows.length||!rows.some(x=>x.measurements.length))return NextResponse.json({error:'Benchmark의 Day 0 측정 기록이 필요합니다.'},{status:400})
+  const channels=[...new Set(rows.flatMap(row=>row.measurements.map((measurement:any)=>measurement.channel)))]
+  const hasNaver=channels.includes('Naver Web API')||channels.includes('Naver Search')
   const prompt=`너는 검색·AI 발견 개선 분석가다. 다음은 회사 정보와 고정 Benchmark 질문의 Day 0 채널별 측정 결과다. 채널마다 검색 방식과 결과가 다르므로 채널을 구분해서 해석하라.
 회사: ${JSON.stringify(p)}
 측정: ${JSON.stringify(rows)}
-목표는 "왜 이 회사가 현재 답변에서 발견되지 않는지"를 증거 기반으로 분석하고, 공개 홈페이지에서 개선할 정보 구조를 제안하는 것이다.
-측정 결과에 없는 사실을 지어내지 말고, 검색 노출을 보장한다고 표현하지 마라.
+목표는 발견 여부와 실제 결과를 근거로 관찰 가능한 부족 정보를 찾고, 채널별로 확인할 일과 공개 홈페이지에서 할 일을 제안하는 것이다.
+채널별 측정 성격: Naver Web API는 웹문서 검색 API 상위 20건으로 네이버 통합검색 화면의 순위나 수집·색인 상태를 증명하지 않는다. Naver Search는 직원이 입력한 통합검색 화면 기록이다. Gemini는 Gemini API와 Google Search grounding, OpenAI Web Search API는 OpenAI Responses API이며 각각 소비자용 Gemini·ChatGPT 화면과 동일하지 않다. Perplexity API와 Claude API도 소비자 화면 기록과 구분한다. notes에 적힌 측정 방식과 한계를 확인하라.
+${hasNaver?'네이버 측정이 있으므로 네이버 측정의 근거를 다른 채널과 구분해 분석하라. 사이트의 수집·색인 여부는 이 측정만으로 알 수 없으므로 필요한 경우 네이버 서치어드바이저의 소유확인·수집·색인 현황을 "확인할 일"로 제안하라. 사이트맵·robots.txt·고유한 제목과 설명·질문에 실제로 답하는 본문은 확인된 부족 정보가 있을 때만 수정 작업으로 제안하라. 웹문서 API 결과와 수동 통합검색 결과가 다르면 그 차이를 관찰로 기록하라.':'네이버 측정이 없으므로 네이버에서 발견되었거나 미발견되었다고 단정하지 말고, 네이버 전용 개선안을 억지로 만들지 마라.'}
+측정 결과에 없는 사실을 지어내지 마라. 미발견을 곧바로 수집 실패나 콘텐츠 품질 문제로 단정하지 말고, 확인할 일과 확인된 수정 작업을 구분하라. 키워드 반복·순위 보장·대량 문서 생성은 권하지 마라.
 한국어로 다음 형식만 출력하라.
 [요약]
 3~5문장
 [공통 부족정보]
 - ...
 [우선 개선안]
-1. 제목 | 이유 | 홈페이지에서 할 일
+1. 제목 | 측정 근거와 필요한 확인 | 확인 또는 홈페이지에서 할 일
 2. ...
 최대 7개
 [Benchmark별 관찰]
-- 질문 요약 | 현재 관찰 | 필요한 정보
+- 질문 요약 | 채널별 현재 관찰 | 필요한 확인 또는 정보
 [주의]
-측정 한계와 재측정 시 같은 Benchmark를 유지해야 한다는 점을 짧게 적어라.`
+API와 실제 화면의 차이, 수집·색인 미확인 상태, 재측정 시 같은 Benchmark를 유지해야 한다는 점을 해당할 때 짧게 적어라.`
   const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:prompt})})
   const raw=await r.json();if(!r.ok)return NextResponse.json({error:raw?.error?.message||'OpenAI 분석 오류'},{status:502})
   const text=(raw.output??[]).filter((x:any)=>x.type==='message').flatMap((x:any)=>x.content??[]).filter((x:any)=>x.type==='output_text').map((x:any)=>x.text||'').join('\n').trim()
