@@ -4,6 +4,8 @@ import {createClient} from '@supabase/supabase-js'
 import WebsiteInspector from '../../WebsiteInspector'
 import InquiryActions from './InquiryActions'
 import DiagnosisReportEditor from './DiagnosisReportEditor'
+import InquiryNaver from './InquiryNaver'
+import {requireStaff} from '../../../../lib/requireStaff'
 
 export const dynamic='force-dynamic'
 export const revalidate=0
@@ -26,10 +28,19 @@ async function getInquiry(id:number){
  const r=await s.from('discovery_inquiries').select('id,company_name,website_url,industry,main_services,concerns,contact_name,phone,email,message,status,created_at,project_id').eq('id',id).single()
  return r.data as Inquiry|null
 }
+async function getNaverHistory(id:number){
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
+ if(!url||!key)return []
+ const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
+ const {data}=await s.from('discovery_naver_inquiry_history').select('id,query,interpreted,created_at').eq('inquiry_id',id).order('created_at',{ascending:false}).limit(20)
+ return data||[]
+}
 
 export default async function InquiryPage({params}:{params:{id:string}}){
+ await requireStaff()
  const inquiry=await getInquiry(Number(params.id)); if(!inquiry)notFound()
  const report=await getReport(inquiry.id)
+ const naverHistory=await getNaverHistory(inquiry.id)
  return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-6xl px-5 pb-10 pt-24 md:px-8 md:pt-28">
   <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Consultation Diagnosis</p><h1 className="mt-1 text-3xl font-extrabold">{inquiry.company_name}</h1><p className="mt-2 text-sm text-gray-500">접수 {new Date(inquiry.created_at).toLocaleString('ko-KR')} · {statusLabel[inquiry.status]||inquiry.status}</p></div><Link href="/discovery" className="inline-flex items-center justify-center rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90">회사 대시보드로 돌아가기 →</Link></header>
   <section className="mb-6 grid gap-6 lg:grid-cols-[1.3fr_.7fr]">
@@ -48,6 +59,7 @@ export default async function InquiryPage({params}:{params:{id:string}}){
   </section>
   <WebsiteInspector url={inquiry.website_url}/>
   <DiagnosisReportEditor id={inquiry.id} initial={report}/>
+  <InquiryNaver inquiryId={inquiry.id} initial={naverHistory}/>
   <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">{inquiry.project_id?`계약 완료 · 관리 프로젝트 #${inquiry.project_id}로 연결되었습니다.`:'계약 완료 시 이 상담 정보를 바탕으로 관리 프로젝트가 자동 생성되고 상담 건과 연결됩니다.'}</p></section>
  </div></div>
 }

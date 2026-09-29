@@ -15,17 +15,18 @@ export async function POST(request:Request){
  const auth=createClient(url,publishable,{auth:{persistSession:false,autoRefreshToken:false}})
  const {data:{user}}=await auth.auth.getUser(token)
  if(!user)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
- let body:{projectId?:number;query?:string;channels?:string[];trend?:boolean;shoppingCategory?:string}
+ let body:{projectId?:number;inquiryId?:number;query?:string;channels?:string[];trend?:boolean;shoppingCategory?:string}
  try{body=await request.json()}catch{return NextResponse.json({error:'요청 형식을 확인해 주세요.'},{status:400})}
- const projectId=Number(body.projectId),query=String(body.query||'').trim()
- if(!Number.isInteger(projectId)||projectId<1||!query||query.length>80)return NextResponse.json({error:'프로젝트와 80자 이내 검색어를 입력해 주세요.'},{status:400})
+ const projectId=Number(body.projectId),inquiryId=Number(body.inquiryId),query=String(body.query||'').trim()
+ const isProject=Number.isInteger(projectId)&&projectId>0,isInquiry=Number.isInteger(inquiryId)&&inquiryId>0
+ if(isProject===isInquiry||!query||query.length>80)return NextResponse.json({error:'프로젝트 또는 상담 건과 80자 이내 검색어를 입력해 주세요.'},{status:400})
  const chosen=Array.isArray(body.channels)?[...new Set(body.channels)].filter(code=>code in channels):[]
  const useTrend=body.trend===true,shoppingCategory=String(body.shoppingCategory||'').trim()
  if(!chosen.length&&!useTrend&&!shoppingCategory)return NextResponse.json({error:'조회할 채널을 하나 이상 선택해 주세요.'},{status:400})
  if(shoppingCategory&&!/^\d{8,12}$/.test(shoppingCategory))return NextResponse.json({error:'네이버쇼핑 카테고리 코드를 확인해 주세요.'},{status:400})
  const s=createClient(url,key,{auth:{persistSession:false}})
- const {data:project}=await s.from('discovery_projects').select('id,name').eq('id',projectId).maybeSingle()
- if(!project)return NextResponse.json({error:'프로젝트를 찾지 못했습니다.'},{status:404})
+ const {data:project}=isProject?await s.from('discovery_projects').select('id,name,naver_management').eq('id',projectId).maybeSingle():await s.from('discovery_inquiries').select('id,company_name,status').eq('id',inquiryId).maybeSingle()
+ if(!project||isProject&&!('naver_management' in project&&project.naver_management))return NextResponse.json({error:'네이버 관리 대상 업체를 찾지 못했습니다.'},{status:404})
  const headers={'X-NCP-APIGW-API-KEY-ID':id,'X-NCP-APIGW-API-KEY':secret}
  const results=await Promise.all(chosen.map(async code=>{
   const label=channels[code as keyof typeof channels]
@@ -52,5 +53,5 @@ export async function POST(request:Request){
   const raw=await response.json().catch(()=>({}))
   shopping={category:shoppingCategory,data:response.ok?(raw.results?.[0]?.data||[]).map((point:any)=>({period:String(point.period),ratio:Number(point.ratio)||0})):[],...(!response.ok?{error:`${response.status}: ${clean(raw.errorMessage||raw.message||'쇼핑 인사이트 이용 권한 또는 카테고리 코드를 확인해 주세요.')}`}:{})}
  }catch{shopping={category:shoppingCategory,data:[],error:'쇼핑 인사이트 API에 연결하지 못했습니다.'}}
- return NextResponse.json({project:project.name,query,checkedAt:new Date().toISOString(),results,trend,shopping})
+ return NextResponse.json({project:'name' in project?project.name:project.company_name,query,checkedAt:new Date().toISOString(),results,trend,shopping})
 }

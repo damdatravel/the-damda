@@ -1,7 +1,13 @@
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
+import {cookies} from 'next/headers'
 const allowed=new Set(['diagnosis_pending','reviewing','proposal','customer_delivery','quote_drafting','quote_ready','quote_sent','contracted','closed'])
 export async function PATCH(req:Request,{params}:{params:{id:string}}){
+ const token=cookies().get('damda_staff_token')?.value,publishable=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+ if(!token||!publishable||!process.env.NEXT_PUBLIC_SUPABASE_URL)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
+ const auth=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,publishable,{auth:{persistSession:false,autoRefreshToken:false}})
+ const {data:{user}}=await auth.auth.getUser(token)
+ if(!user)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
  if(!url||!key)return NextResponse.json({error:'서버 설정을 확인해 주세요.'},{status:500})
  const body=await req.json().catch(()=>({}))

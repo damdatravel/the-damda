@@ -1,6 +1,15 @@
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import crypto from 'crypto'
+import {cookies} from 'next/headers'
+
+async function staff(){
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,token=cookies().get('damda_staff_token')?.value
+ if(!url||!key||!token)return false
+ const s=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
+ const {data,error}=await s.auth.getUser(token)
+ return !error&&!!data.user
+}
 
 function db(){const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw new Error('DB_CONFIG');return createClient(url,key,{auth:{persistSession:false}})}
 function token(){return crypto.randomBytes(24).toString('base64url')}
@@ -28,6 +37,7 @@ async function synthesize(i:any,snapshot:any){
  return JSON.parse(text)
 }
 export async function POST(req:Request,{params}:{params:{id:string}}){
+ if(!await staff())return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
  try{const s=db(),id=Number(params.id),body=await req.json().catch(()=>({}))
   const {data:i,error}=await s.from('discovery_inquiries').select('id,company_name,website_url,industry,main_services,concerns,message').eq('id',id).single()
   if(error||!i)return NextResponse.json({error:'상담 정보를 찾을 수 없습니다.'},{status:404})
