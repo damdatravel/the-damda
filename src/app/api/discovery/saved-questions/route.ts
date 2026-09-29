@@ -13,6 +13,17 @@ async function staff(){
  return error||!data.user?null:createClient(url,secret,{auth:{persistSession:false}})
 }
 
+export async function GET(req:Request){
+ try{
+  const projectId=Number(new URL(req.url).searchParams.get('projectId'))
+  if(!Number.isInteger(projectId)||projectId<1)return NextResponse.json({error:'프로젝트를 확인해 주세요.'},{status:400})
+  const s=await staff();if(!s)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
+  const {data,error}=await s.from('discovery_questions').select('id,question,intent,dimension_count,is_benchmark,status,created_at').eq('project_id',projectId).order('created_at',{ascending:false})
+  if(error)return NextResponse.json({error:error.message},{status:500})
+  return NextResponse.json({questions:data??[]},{headers:{'Cache-Control':'no-store'}})
+ }catch(e:any){return NextResponse.json({error:e?.message||'질문 조회에 실패했습니다.'},{status:500})}
+}
+
 export async function POST(req:Request){
  try{
   const body=await req.json(),projectId=Number(body.projectId),questions=body.questions
@@ -36,7 +47,9 @@ export async function POST(req:Request){
   if(ee)return NextResponse.json({error:ee.message},{status:500})
   const already=new Set((existing??[]).map(x=>x.question)),fresh=rows.filter(x=>{if(already.has(x.question))return false;already.add(x.question);return true})
   if(fresh.length){const {error}=await s.from('discovery_questions').insert(fresh);if(error)return NextResponse.json({error:error.message},{status:500})}
-  return NextResponse.json({saved:fresh.length,skipped:rows.length-fresh.length})
+  const {data:stored,error:readError}=await s.from('discovery_questions').select('id,question,intent,dimension_count,is_benchmark,status,created_at').eq('project_id',projectId).order('created_at',{ascending:false})
+  if(readError)return NextResponse.json({error:'저장 후 목록 조회 실패: '+readError.message},{status:500})
+  return NextResponse.json({saved:fresh.length,skipped:rows.length-fresh.length,questions:stored??[]})
  }catch(e:any){return NextResponse.json({error:e?.message||'질문 저장에 실패했습니다.'},{status:500})}
 }
 
