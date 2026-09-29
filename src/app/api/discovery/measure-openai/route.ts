@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
+import {cookies} from 'next/headers'
 const seoulDay=(date:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date))
 
 export async function POST(req:Request){
@@ -9,10 +10,16 @@ export async function POST(req:Request){
   if(!Number.isInteger(projectId)||projectId<1)return NextResponse.json({error:'올바른 프로젝트가 아닙니다.'},{status:400})
   const openaiKey=process.env.OPENAI_API_KEY
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const publishable=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const key=process.env.SUPABASE_SERVICE_ROLE_KEY
   if(!openaiKey)return NextResponse.json({error:'OPENAI_API_KEY가 아직 설정되지 않았습니다.'},{status:500})
-  if(!url||!key)return NextResponse.json({error:'Supabase 환경변수를 확인해 주세요.'},{status:500})
-  const s=createClient(url,key)
+  if(!url||!publishable||!key)return NextResponse.json({error:'Supabase 환경변수를 확인해 주세요.'},{status:500})
+  const token=cookies().get('damda_staff_token')?.value
+  if(!token)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
+  const auth=createClient(url,publishable,{auth:{persistSession:false,autoRefreshToken:false}})
+  const {data:user,error:authError}=await auth.auth.getUser(token)
+  if(authError||!user.user)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
+  const s=createClient(url,key,{auth:{persistSession:false}})
   const {data:q,error:qe}=await s.from('discovery_questions').select('id,question,is_benchmark').eq('project_id',projectId).eq('id',Number(questionId)).eq('is_benchmark',true).maybeSingle()
   if(qe||!q)return NextResponse.json({error:qe?.message||'Benchmark 질문을 찾지 못했습니다.'},{status:404})
 
