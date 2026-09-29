@@ -23,6 +23,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">서비스</h4>
             <ul className="space-y-2 text-sm">
+              <li><Link href="/ai-search" className="hover:text-white transition-colors">Discovery — 검색·AI 발견 관리</Link></li>
               <li><a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">담다트래블 — 공항 캐리어 배송</a></li>
               <li><a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">여는날 — 웨딩 &amp; 이벤트</a></li>
               <li><a href="/squeeze-bin" className="hover:text-white transition-colors">스퀴즈빈 — 스마트 자원순환</a></li>
@@ -52,7 +53,7 @@ export default function Footer() {
             <p>주식회사 더담다 | 대표이사 김봉근 | 사업자등록번호 475-81-03874 | 통신판매업신고 제2026-영종구-0028호</p>
             <p>인천광역시 영종구 영종대로162번길 20, 305호 (운서동, 스타힐스빌딩)</p>
           </div>
-          <div className="flex flex-col items-start gap-2 md:items-end"><Link href="/privacy" className="font-semibold text-gray-400 hover:text-white">개인정보처리방침</Link><p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p></div>
+          <div className="flex flex-col items-start gap-2 md:items-end"><Link href="/privacy" className="font-semibold text-gray-400 hover:text-white">개인정보처리방침</Link><Link href="/staff-login" className="rounded-lg border border-white/20 px-3 py-1.5 font-semibold text-gray-300 transition-colors hover:border-white/50 hover:text-white">직원 로그인 → Discovery</Link><p className="text-gray-600">© 2026 Damda Inc. All rights reserved.</p></div>
         </div>
       </div>
     </footer>
