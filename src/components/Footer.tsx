@@ -24,6 +24,7 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">서비스</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/ai-search" className="hover:text-white transition-colors">Discovery — 검색·AI 발견 관리</Link></li>
+              <li><Link href="/ai-search/naver" className="hover:text-white transition-colors">네이버 발견 상태 진단</Link></li>
               <li><a href="https://www.damdatravel.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">담다트래블 — 공항 캐리어 배송</a></li>
               <li><a href="https://yeonunnal.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">여는날 — 웨딩 &amp; 이벤트</a></li>
               <li><a href="/squeeze-bin" className="hover:text-white transition-colors">스퀴즈빈 — 스마트 자원순환</a></li>

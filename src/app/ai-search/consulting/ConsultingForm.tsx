@@ -2,11 +2,12 @@
 import {FormEvent,useEffect,useState} from 'react'
 import Link from 'next/link'
 
-const concernOptions=['검색해도 업체가 잘 나오지 않음','ChatGPT 등 AI에서 잘 발견되지 않음','광고 의존도가 높음','홈페이지 검색 유입이 적음','현재 상태를 먼저 진단하고 싶음']
+const naverConcern='네이버에서 업체·홈페이지가 잘 검색되지 않음'
+const concernOptions=[naverConcern,'검색해도 업체가 잘 나오지 않음','ChatGPT 등 AI에서 잘 발견되지 않음','광고 의존도가 높음','홈페이지 검색 유입이 적음','현재 상태를 먼저 진단하고 싶음']
 
-export default function ConsultingForm(){
+export default function ConsultingForm({topic}:{topic?:string}){
  const[busy,setBusy]=useState(false),[done,setDone]=useState(false),[error,setError]=useState('')
- const[concerns,setConcerns]=useState<string[]>([]),[emailDomain,setEmailDomain]=useState('naver.com')
+ const[concerns,setConcerns]=useState<string[]>(topic==='naver'?[naverConcern]:[]),[emailDomain,setEmailDomain]=useState('naver.com')
  const[phoneTail,setPhoneTail]=useState(''),[otp,setOtp]=useState(''),[smsBusy,setSmsBusy]=useState(false),[verified,setVerified]=useState(false),[seconds,setSeconds]=useState(0)
  useEffect(()=>{if(seconds<=0)return;const t=setInterval(()=>setSeconds(s=>Math.max(0,s-1)),1000);return()=>clearInterval(t)},[seconds])
  const phone='010'+phoneTail

@@ -97,6 +97,12 @@ export default function AiSearchPage() {
               >
                 검색 유입 점검 가이드
               </Link>
+              <Link
+                href="/ai-search/naver"
+                className="border border-[#10E096]/60 text-[#10E096] font-semibold px-8 py-4 rounded-xl text-base hover:bg-[#10E096]/10 transition-all"
+              >
+                네이버에서 안 보인다면
+              </Link>
               <a
                 href="#targets"
                 className="border border-white/30 text-white font-semibold px-8 py-4 rounded-xl text-base hover:bg-white/10 transition-all"
