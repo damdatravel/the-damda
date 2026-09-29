@@ -15,7 +15,7 @@ export async function GET(req:Request){
  const round=new URL(req.url).searchParams.get('round')
  if(!Number.isInteger(projectId)||projectId<1)return NextResponse.json({error:'올바른 프로젝트가 아닙니다.'},{status:400})
  let query=s.from('discovery_analysis_history').select('id,project_id,measurement_round,observed,interpreted,created_at').eq('project_id',projectId)
- if(round==='Naver')query=query.eq('measurement_round','Naver')
+ if(round==='Naver')query=query.in('measurement_round',['Naver','Naver Approved'])
  const {data,error}=await query.order('created_at',{ascending:false}).limit(20)
  return error?NextResponse.json({error:error.message},{status:500}):NextResponse.json({history:data??[]})
 }
