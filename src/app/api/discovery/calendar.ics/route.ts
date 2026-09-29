@@ -41,6 +41,6 @@ export async function GET(){
    'END:VEVENT'
   ].join('\r\n')
  }).join('\r\n')
- const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//The Damda//Discovery//KO','CALSCALE:GREGORIAN','METHOD:PUBLISH',`X-WR-CALNAME:${esc('The Damda Discovery 재측정')}`,events,'END:VCALENDAR'].join('\r\n')
+ const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//The Damda//Discovery//KO','CALSCALE:GREGORIAN','METHOD:PUBLISH',`X-WR-CALNAME:${esc('담다 디스커버리 재측정')}`,events,'END:VCALENDAR'].join('\r\n')
  return new NextResponse(body,{headers:{'Content-Type':'text/calendar; charset=utf-8','Content-Disposition':'inline; filename="the-damda-discovery.ics"','Cache-Control':'no-store'}})
 }

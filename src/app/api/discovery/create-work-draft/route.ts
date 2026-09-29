@@ -14,7 +14,7 @@ export async function POST(req:Request){
   const s=createClient(url,key)
   const {data:p,error}=await s.from('discovery_projects').select('name,website_url,industry,main_services,target_customer,service_area,description').eq('id',projectId).single()
   if(error)return NextResponse.json({error:error.message},{status:500})
-  const prompt=`너는 The Damda Discovery의 실행 작업 설계자다.
+  const prompt=`너는 담다 디스커버리의 실행 작업 설계자다.
 회사 정보: ${JSON.stringify(p)}
 승인된 개선 과제:
 제목: ${body.title}

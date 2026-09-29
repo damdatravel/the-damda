@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '검색·AI 발견 관리 | 검색 노출 진단·개선',
+  title: '담다 디스커버리 | 검색·AI 발견 상태 진단·개선',
   description: '검색엔진과 AI가 업체의 서비스와 고객 이용 상황을 이해하기 쉽도록 정보 구조를 점검하고, 고정 질문으로 발견 상태를 측정·개선합니다.',
   alternates: { canonical: 'https://the-damda.co.kr/ai-search' },
 }
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Service',
-  name: '검색·AI 발견 관리 서비스',
+  name: '담다 디스커버리 — 검색·AI 발견 관리',
   provider: {
     '@type': 'Organization',
     name: '주식회사 더담다',

@@ -124,11 +124,12 @@ export default function HomePage() {
                 사람의 시간을<br />담는 기업입니다.
               </h2>
               <p className="text-gray-500 text-lg leading-relaxed mb-6">
-                주식회사 더담다(The Damda Inc.)는 인천 영종도를 기반으로 설립된 솔루션 기업입니다.
-                사람의 시간을 어떻게 더 가치 있게 만들 것인가 — 이 하나의 질문이 더담다의 모든 사업을 만듭니다.
+                주식회사 더담다(The Damda Inc.)는 여행, 공간, 자원순환, 검색·AI 발견 관리까지
+                사람의 시간을 더 가치 있게 만드는 서비스를 기획하고 운영합니다.
               </p>
               <p className="text-gray-500 text-lg leading-relaxed">
-                더담다가 파는 것은 제품이나 서비스가 아닙니다. 당신의 시간입니다.
+                고객이 필요한 정보를 더 쉽게 찾고, 복잡한 과정을 덜어내며,
+                각자의 시간에 집중할 수 있도록 실질적인 해결책을 만듭니다.
               </p>
             </div>
             <div className="flex flex-col gap-4">
@@ -145,7 +146,7 @@ export default function HomePage() {
                 {[
                   { label: '설립', value: '2026', sub: '' },
                   { label: '사업자', value: '475-81-03874', sub: '' },
-                  { label: '운영 서비스', value: '3개', sub: '담다트래블 · 여는날 · 스퀴즈빈' },
+                  { label: '운영 서비스', value: '4개', sub: '담다트래블 · 여는날 · 스퀴즈빈 · 담다 디스커버리' },
                   { label: '대표이사', value: '김봉근', sub: 'The Damda Inc.' },
                 ].map(item => (
                   <div key={item.label} className="bg-[#F8FAFB] rounded-2xl p-5">
@@ -430,11 +431,11 @@ export default function HomePage() {
               </table>
             </div>
             <div className="bg-[#0A0F1E] rounded-2xl p-8 text-white">
-              <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">인천 영종도</p>
-              <p className="text-2xl font-bold mb-3">인천 영종도 기반 기업</p>
+              <p className="text-[#10E096] text-sm font-semibold tracking-widest uppercase mb-4">THE DAMDA</p>
+              <p className="text-2xl font-bold mb-3">사람의 시간을 더 가치 있게</p>
               <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                담다트래블 캐리어 배송, 여는날 웨딩·이벤트,<br />
-                스퀴즈빈 자원순환 솔루션을 운영·추진 중입니다.
+                담다트래블, 여는날, 스퀴즈빈, 담다 디스커버리까지.<br />
+                필요한 서비스를 만들고, 고객이 더 쉽게 발견할 수 있도록 돕습니다.
               </p>
               <Link
                 href="/contact"
