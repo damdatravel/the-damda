@@ -1,5 +1,5 @@
 'use client'
-import {useState} from 'react'
+import {useEffect,useState} from 'react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 type Q={id:number;question:string;intent:string|null;dimension_count:number;is_benchmark:boolean;status:string;created_at:string}
@@ -7,6 +7,7 @@ type AutoChannel='gemini'|'openai'
 export default function SavedQuestions({initial,projectId,projectName}:{initial:Q[];projectId:number;projectName:string}){
  const router=useRouter()
  const[qs,setQs]=useState(initial),[busy,setBusy]=useState<number|null>(null),[autoBusy,setAutoBusy]=useState<string|null>(null),[batchBusy,setBatchBusy]=useState(false),[msg,setMsg]=useState('')
+ useEffect(()=>setQs(initial),[initial])
  const toggle=async(q:Q)=>{setBusy(q.id);setMsg('');const next=!q.is_benchmark;try{const r=await fetch('/api/discovery/saved-questions',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,id:q.id,isBenchmark:next})});const j=await r.json();if(!r.ok)throw new Error(j.error||'변경 실패');setQs(x=>x.map(v=>v.id===q.id?{...v,is_benchmark:next}:v));setMsg(next?'Benchmark로 지정했습니다.':'Benchmark 지정을 해제했습니다.')}catch(e:any){setMsg('변경 실패: '+e.message)}finally{setBusy(null)}}
  const requestMeasure=async(q:Q,channel:AutoChannel)=>{const r=await fetch('/api/discovery/measure-'+channel,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId,questionId:q.id})});const j=await r.json();if(!r.ok)throw new Error(j.error||'자동 측정 실패');if(!j.verified||!j.measurementId)throw new Error('DB 저장 검증에 실패했습니다.');return j}
  const autoMeasure=async(q:Q,channel:AutoChannel)=>{const label=channel==='openai'?'OpenAI Web Search':'Gemini';const key=channel+'-'+q.id;setAutoBusy(key);setMsg('');try{const j=await requestMeasure(q,channel);router.refresh();setMsg(j.reused?label+' 오늘 이미 측정한 기록을 다시 표시했습니다. 새 API 호출이나 새 기록은 생성되지 않았습니다.':label+' 새 자동 측정 완료 · '+(j.discovered?projectName+' 발견':projectName+' 미발견')+' · 대시보드와 캘린더에 저장되었습니다.')}catch(e:any){setMsg(label+' 자동 측정 실패: '+e.message)}finally{setAutoBusy(null)}}
