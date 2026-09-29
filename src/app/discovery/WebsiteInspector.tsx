@@ -2,10 +2,10 @@
 import {useEffect,useState} from 'react'
 type Page={url:string;title?:string;description?:string;h1?:string;structuredData?:string[];hasFaq?:boolean;error?:string}
 type Result={checkedAt:string;website:string;pageCount:number;sitemapFound:boolean;sitemapUrlCount:number;structuredDataTypes:string[];pages:Page[]}
-export default function WebsiteInspector({url}:{url?:string|null}){
+export default function WebsiteInspector({url,onResult}:{url?:string|null;onResult?:(result:Result)=>void|Promise<void>}){
  const[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState<Result|null>(null),[target,setTarget]=useState(url||'')
  useEffect(()=>{if(url&&!target)setTarget(url)},[url,target])
- const run=async()=>{setBusy(true);setError('');try{const r=await fetch('/api/discovery/inspect-website',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:target})});const j=await r.json();if(!r.ok)throw new Error(j.error||'홈페이지 확인 실패');setResult(j)}catch(e:any){setError(e.message)}finally{setBusy(false)}}
+ const run=async()=>{setBusy(true);setError('');try{const r=await fetch('/api/discovery/inspect-website',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:target})});const j=await r.json();if(!r.ok)throw new Error(j.error||'홈페이지 확인 실패');setResult(j);if(onResult)await onResult(j)}catch(e:any){setError(e.message)}finally{setBusy(false)}}
  return <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Website Check</p><h2 className="mt-1 text-xl font-extrabold">현재 홈페이지 현황 확인</h2><p className="mt-2 text-sm text-gray-500">개선안을 만들기 전에 기존 페이지·제목·주요 설명·구조화 정보·sitemap을 먼저 확인합니다.</p></div></div><div className="mt-5 flex flex-col gap-2 md:flex-row"><input value={target} onChange={e=>setTarget(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')run()}} placeholder="https://example.com" className="min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-[#0A9B6C]"/><button onClick={run} disabled={busy||!target.trim()} className="shrink-0 rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{busy?'확인 중...':'홈페이지 확인'}</button></div>
   {error&&<div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
