@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
+const seoulDay=(date:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date))
 
 export async function POST(req:Request){
  try{
@@ -14,9 +15,9 @@ export async function POST(req:Request){
   const s=createClient(url,key)
   const {data:q,error:qe}=await s.from('discovery_questions').select('id,question,is_benchmark').eq('project_id',projectId).eq('id',Number(questionId)).eq('is_benchmark',true).maybeSingle()
   if(qe||!q)return NextResponse.json({error:qe?.message||'Benchmark 질문을 찾지 못했습니다.'},{status:404})
-  const {data:existing,error:ee}=await s.from('discovery_measurements').select('id,is_discovered,result_text,source_urls').eq('project_id',projectId).eq('question_id',q.id).eq('channel','Gemini').eq('measurement_round','Day 0').order('created_at',{ascending:false}).limit(1).maybeSingle()
+  const {data:existing,error:ee}=await s.from('discovery_measurements').select('id,is_discovered,result_text,source_urls,created_at').eq('project_id',projectId).eq('question_id',q.id).eq('channel','Gemini').order('created_at',{ascending:false}).limit(1).maybeSingle()
   if(ee)return NextResponse.json({error:'기존 측정 확인 실패: '+ee.message},{status:500})
-  if(existing)return NextResponse.json({ok:true,verified:true,reused:true,measurementId:existing.id,discovered:existing.is_discovered,answer:existing.result_text,sourceUrls:existing.source_urls??[]})
+  if(existing&&seoulDay(existing.created_at)===seoulDay(new Date().toISOString()))return NextResponse.json({ok:true,verified:true,reused:true,measurementId:existing.id,discovered:existing.is_discovered,answer:existing.result_text,sourceUrls:existing.source_urls??[]})
   const {data:project}=await s.from('discovery_projects').select('name,website_url').eq('id',projectId).single()
   const resp=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent',{
    method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':geminiKey},
@@ -30,7 +31,7 @@ export async function POST(req:Request){
   const haystack=(answer+'\n'+sourceUrls.join('\n')).toLowerCase()
   const names=[project?.name,project?.website_url].filter(Boolean).flatMap((v:any)=>{const name=String(v).toLowerCase();try{const u=new URL(name);return[name,u.hostname.replace(/^www\./,'')]}catch{return[name]}}).filter((v:string)=>v.length>=3)
   const discovered=names.some((name:string)=>haystack.includes(name))
-  const {data:saved,error:ie}=await s.from('discovery_measurements').insert({project_id:projectId,question_id:q.id,channel:'Gemini',is_discovered:discovered,result_text:answer,source_urls:sourceUrls.length?sourceUrls:null,notes:'자동 측정 · Gemini API + Google Search grounding · 프로젝트 브랜드/도메인 직접 언급 기준 자동 판정',measurement_round:'Day 0'}).select('id').single()
+  const {data:saved,error:ie}=await s.from('discovery_measurements').insert({project_id:projectId,question_id:q.id,channel:'Gemini',is_discovered:discovered,result_text:answer,source_urls:sourceUrls.length?sourceUrls:null,notes:'자동 측정 · Gemini API + Google Search grounding · 프로젝트 브랜드/도메인 직접 언급 기준 자동 판정',measurement_round:existing?'재측정':'Day 0'}).select('id').single()
   if(ie||!saved)return NextResponse.json({error:'측정 저장 검증 실패: '+(ie?.message||'저장된 행을 다시 읽지 못했습니다.')},{status:500})
   return NextResponse.json({ok:true,verified:true,reused:false,measurementId:saved.id,discovered,answer,sourceUrls})
  }catch(e:any){return NextResponse.json({error:e?.message||'자동 측정 중 오류가 발생했습니다.'},{status:500})}
