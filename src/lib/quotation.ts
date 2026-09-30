@@ -1,12 +1,19 @@
 export const quoteStatuses={draft:'초안',sent:'전달',negotiating:'협의 중',accepted:'수락',closed:'종료'}
 export type QuoteLine={name:string;kind:'initial'|'monthly'|'extra';quantity:number;price:number}
 export type Quotation={number:string;date:string;validUntil:string;customer:string;contact:string;phone:string;email:string;website:string;ai:boolean;naver:boolean;situation:string;priorities:string;purpose:string;websites:number;queries:number;channels:string[];frequency:string;reportFrequency:string;consultation:string;startDate:string;months:number;scope:string;cooperation:string;payment:string;notes:string;vat:boolean;status:keyof typeof quoteStatuses;lines:QuoteLine[]}
+export const quotationChannels=['네이버 웹문서','네이버 블로그','네이버 카페','네이버 지역','네이버 쇼핑','네이버 검색어 트렌드','Gemini API','OpenAI API','Perplexity API','Claude API','ChatGPT 수동 확인','구글 검색 수동 확인']
+export function channelAllowed(channel:string,scope:{ai:boolean;naver:boolean}){return quotationChannels.includes(channel)&&(channel.startsWith('네이버')?scope.naver:scope.ai)}
+export function changeQuoteServices(q:Quotation,ai:boolean,naver:boolean):Quotation{
+ const narrowed=q.ai&&!ai||q.naver&&!naver
+ return {...q,ai,naver,channels:q.channels.filter(c=>channelAllowed(c,{ai,naver})),...(narrowed?{situation:'',priorities:''}:{}),scope:`홈페이지 점검, ${ai&&naver?'네이버 검색어·AI 질문':naver?'네이버 검색어':'AI 질문'} 선정, 선택 채널 측정, 결과 분석, 개선안 제안 및 재측정.\n홈페이지 수정·콘텐츠 제작·게시·개발 작업은 별도 견적이며, 포함하는 작업은 본 견적에 명시합니다.`}
+}
 export function quoteTotals(q:Quotation){
  const initial=q.lines.filter(x=>x.kind!=='monthly').reduce((s,x)=>s+x.quantity*x.price,0)
  const monthly=q.lines.filter(x=>x.kind==='monthly').reduce((s,x)=>s+x.quantity*x.price,0)
  const total=initial+monthly*q.months, tax=(n:number)=>q.vat?Math.round(n*.1):0
  return {initial,monthly,total,vat:tax(total),grand:total+tax(total),first:initial+monthly+tax(initial+monthly),recurring:monthly+tax(monthly)}
 }
+export function quoteServicesConsistent(q:Quotation){return q.channels.every(c=>channelAllowed(c,q))}
 export function validateQuotation(value:unknown):value is Quotation{
  if(!value||typeof value!=='object')return false
  const q=value as Quotation

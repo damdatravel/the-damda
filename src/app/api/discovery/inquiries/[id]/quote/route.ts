@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server'
 import {cookies} from 'next/headers'
 import {createClient} from '@supabase/supabase-js'
-import {validateQuotation,quoteStatuses} from '../../../../../../lib/quotation'
+import {validateQuotation,quoteStatuses,quoteServicesConsistent} from '../../../../../../lib/quotation'
 export async function PATCH(req:Request,{params}:{params:{id:string}}){
  try{
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY,pub=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,token=cookies().get('damda_staff_token')?.value
@@ -26,7 +26,7 @@ export async function PUT(req:Request,{params}:{params:{id:string}}){
   const {data:{user}}=await createClient(url,pub,{auth:{persistSession:false}}).auth.getUser(token)
   if(!user)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
   const id=Number(params.id),body=await req.json()
-  if(!Number.isSafeInteger(id)||id<1||!validateQuotation(body))return NextResponse.json({error:'서비스, 고객명, 견적번호와 수량·금액을 확인해 주세요.'},{status:400})
+  if(!Number.isSafeInteger(id)||id<1||(!validateQuotation(body)||!quoteServicesConsistent(body)))return NextResponse.json({error:'서비스, 고객명, 견적번호와 수량·금액을 확인해 주세요.'},{status:400})
   const s=createClient(url,key,{auth:{persistSession:false}})
   const {data:inquiry}=await s.from('discovery_inquiries').select('id').eq('id',id).maybeSingle()
   if(!inquiry)return NextResponse.json({error:'상담 업체를 찾을 수 없습니다.'},{status:404})

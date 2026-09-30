@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
+import {validateQuotation,quoteServicesConsistent} from '../../../../../lib/quotation'
 import {transferNaverConsultation} from '../../../../../lib/transferNaverConsultation'
 const allowed=new Set(['diagnosis_pending','reviewing','proposal','customer_delivery','quote_drafting','quote_ready','quote_sent','contracted','closed'])
 export async function PATCH(req:Request,{params}:{params:{id:string}}){
@@ -16,7 +17,10 @@ export async function PATCH(req:Request,{params}:{params:{id:string}}){
  const s=createClient(url,key,{auth:{persistSession:false}})
  const id=Number(params.id)
  if(body.status==='contracted'){
-  const ai=body.ai_management,naver=body.naver_management
+  const quote=await s.from('discovery_quotations').select('document').eq('inquiry_id',id).maybeSingle()
+  if(quote.error)return NextResponse.json({error:'계약 기준 견적을 조회하지 못했습니다.'},{status:500})
+  if(quote.data&&(!validateQuotation(quote.data.document)||!quoteServicesConsistent(quote.data.document)))return NextResponse.json({error:'저장된 견적의 서비스와 채널을 정리한 뒤 계약을 진행해 주세요.'},{status:409})
+  const ai=quote.data?quote.data.document.ai:body.ai_management,naver=quote.data?quote.data.document.naver:body.naver_management
   if(typeof ai!=='boolean'||typeof naver!=='boolean'||(!ai&&!naver))return NextResponse.json({error:'이용할 관리 서비스를 하나 이상 선택해 주세요.'},{status:400})
   const inquiry=await s.from('discovery_inquiries').select('id,company_name,website_url,industry,main_services,project_id').eq('id',id).single()
   if(inquiry.error)return NextResponse.json({error:inquiry.error.message},{status:500})
