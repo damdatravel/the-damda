@@ -1,10 +1,13 @@
 import Link from 'next/link'
+import {createClient} from '@supabase/supabase-js'
+import {requireStaff} from '../../../lib/requireStaff'
 import WebsiteInspector from '../WebsiteInspector'
 export const dynamic='force-dynamic'
 export const revalidate=0
-export default function WebsiteCheckPage(){
- return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-6xl px-5 pb-10 pt-16 md:px-8 md:pt-20">
-  <header className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Damda Discovery</p><h1 className="text-3xl font-extrabold md:text-4xl">홈페이지 현황 확인</h1><p className="mt-2 max-w-2xl text-sm text-gray-500">URL을 입력해 공개 페이지의 기본 검색·구조 정보를 빠르게 확인합니다.</p></div><Link href="/discovery" className="rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white">회사 대시보드로 돌아가기 →</Link></header>
-  <WebsiteInspector/>
- </div></div>
+export default async function WebsiteCheckPage(){
+ await requireStaff()
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
+ let inquiries:{id:number;company_name:string;website_url:string}[]=[],error=false
+ if(url&&key){const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}});const result=await s.from('discovery_inquiries').select('id,company_name,website_url').is('project_id',null).neq('status','closed').order('created_at',{ascending:false});inquiries=result.data||[];error=!!result.error}else error=true
+ return <main className="min-h-screen bg-[#F4F7F6] px-5 pb-10 pt-24 text-[#0A0F1E] md:px-8"><div className="mx-auto max-w-6xl"><header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold text-[#087A56]">계약 전 상담</p><h1 className="mt-2 text-3xl font-extrabold">홈페이지 사전 진단</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">상담 업체를 선택하고 검색·AI 또는 네이버 초기 진단을 진행하세요. 보고서는 이 상담 건에 보관되며, 관리 프로젝트는 계약 후 생성됩니다.</p></div><Link href="/discovery" className="rounded-xl border bg-white px-5 py-3 text-sm font-bold">← 회사 대시보드</Link></header><section className="mb-6 rounded-2xl border bg-white p-6"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">상담 업체 선택</h2><Link href="/ai-search/consulting?topic=naver" className="rounded-lg border border-emerald-300 px-3 py-2 text-sm font-bold text-[#087A56]">새 상담 접수 →</Link></div>{error&&<p role="alert" className="mt-4 text-sm text-red-700">상담 목록을 불러오지 못했습니다. 다시 확인해 주세요.</p>}<div className="mt-4 space-y-3">{inquiries.map(i=><div key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"><div><p className="font-bold">{i.company_name}</p><p className="mt-1 break-all text-xs text-gray-500">{i.website_url}</p></div><Link href={`/discovery/inquiries/${i.id}`} className="rounded-lg bg-[#087A56] px-4 py-2 text-sm font-bold text-white">상담 범위 선택·초기 진단 →</Link></div>)}{!inquiries.length&&!error&&<p className="text-sm text-gray-500">대기 중인 상담이 없습니다. 고객 정보를 먼저 접수해 주세요.</p>}</div></section><details className="rounded-2xl border bg-white p-6"><summary className="cursor-pointer font-bold">자료를 저장하지 않고 홈페이지만 빠르게 확인</summary><p className="mt-3 mb-5 text-sm text-gray-500">아래는 임시 확인 도구입니다. 고객 보고서와 상담 아카이브에 연결하려면 위에서 상담 업체를 선택하세요.</p><WebsiteInspector/></details></div></main>
 }

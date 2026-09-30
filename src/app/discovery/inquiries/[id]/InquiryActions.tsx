@@ -1,9 +1,10 @@
 'use client'
-import {useState} from 'react'
+import {useEffect,useState} from 'react'
 import {useRouter} from 'next/navigation'
 const labels:Record<string,string>={diagnosis_pending:'진단 대기',reviewing:'진단·검토 중',proposal:'진행 협의',customer_delivery:'고객 전달',quote_drafting:'견적서 작성 중',quote_ready:'견적서 작성 완료',quote_sent:'견적서 전달 완료',contracted:'계약 완료',closed:'상담 종료'}
-export default function InquiryActions({id,status,projectId}:{id:number;status:string;projectId:number|null}){
- const router=useRouter(),[busy,setBusy]=useState(false),[error,setError]=useState(''),[ai,setAi]=useState(true),[naver,setNaver]=useState(true)
+export default function InquiryActions({id,status,projectId,services}:{id:number;status:string;projectId:number|null;services:{ai:boolean;naver:boolean}}){
+ const router=useRouter(),[busy,setBusy]=useState(false),[error,setError]=useState(''),[ai,setAi]=useState(services.ai),[naver,setNaver]=useState(services.naver)
+ useEffect(()=>{setAi(services.ai);setNaver(services.naver)},[services.ai,services.naver])
  const change=async(next:string)=>{if(next==='contracted'&&!projectId){if(!ai&&!naver){setError('이용할 관리 서비스를 하나 이상 선택해 주세요.');return}if(!window.confirm('선택한 서비스로 관리 프로젝트를 생성합니다. 계속할까요?'))return}setBusy(true);setError('');try{const r=await fetch('/api/discovery/inquiries/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:next,ai_management:ai,naver_management:naver})});const j=await r.json().catch(()=>({}));if(!r.ok)setError(j.error||'상태 변경에 실패했습니다.');else router.refresh()}catch{setError('상태 변경에 실패했습니다.')}finally{setBusy(false)}}
  const steps=[['proposal','진행 협의'],['customer_delivery','고객 결과 전달'],['quote_drafting','견적서 작성 시작'],['quote_ready','견적서 작성 완료'],['quote_sent','견적서 전달 완료']] as const
  return <aside className="rounded-2xl border border-gray-200 bg-[#0A0F1E] p-6 text-white shadow-sm"><p className="text-xs font-bold uppercase tracking-wider text-[#10E096]">Work Status</p><h2 className="mt-1 text-xl font-extrabold">진단 진행 상태</h2><p className="mt-2 text-sm text-gray-400">현재: {labels[status]||status}</p><div className="mt-6 grid gap-2">

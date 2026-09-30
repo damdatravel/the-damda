@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server'
 import {cookies} from 'next/headers'
 import {createClient} from '@supabase/supabase-js'
+import {consultationScope} from '../../../../lib/consultationScope'
 
 const channels={webkr:'웹문서',blog:'블로그',cafearticle:'카페글',local:'지역'} as const
 const clean=(value:unknown)=>String(value??'').replace(/<[^>]*>/g,'').replace(/&(?:amp|lt|gt|quot|apos|nbsp);/g,entity=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'",'&nbsp;':' '}[entity]||entity))
@@ -27,6 +28,14 @@ export async function POST(request:Request){
  const s=createClient(url,key,{auth:{persistSession:false}})
  const {data:project}=isProject?await s.from('discovery_projects').select('id,name,naver_management').eq('id',projectId).maybeSingle():await s.from('discovery_inquiries').select('id,company_name,status').eq('id',inquiryId).maybeSingle()
  if(!project||isProject&&!('naver_management' in project&&project.naver_management))return NextResponse.json({error:'네이버 관리 대상 업체를 찾지 못했습니다.'},{status:404})
+ if(isInquiry){
+  const {data:inquiry}=await s.from('discovery_inquiries').select('project_id,concerns').eq('id',inquiryId).maybeSingle()
+  const {data:diagnosis}=await s.from('discovery_diagnosis_reports').select('website_snapshot').eq('inquiry_id',inquiryId).maybeSingle()
+  const scope=consultationScope(diagnosis?.website_snapshot,inquiry?.concerns),queries=diagnosis?.website_snapshot?.naverSelectedQueries
+  if(inquiry?.project_id)return NextResponse.json({error:'계약된 고객은 관리 프로젝트에서 조회해 주세요.'},{status:409})
+  if(!scope.naver||!Array.isArray(queries)||queries.length>3||!queries.includes(query))return NextResponse.json({error:'상담 홈페이지 점검 후 대표 검색어를 최대 3개 선택·저장해 주세요.'},{status:409})
+  if(shoppingCategory)return NextResponse.json({error:'쇼핑 분야 상세 관리는 계약 후 프로젝트에서 진행합니다.'},{status:400})
+ }
  const headers={'X-NCP-APIGW-API-KEY-ID':id,'X-NCP-APIGW-API-KEY':secret}
  const results=await Promise.all(chosen.map(async code=>{
   const label=channels[code as keyof typeof channels]

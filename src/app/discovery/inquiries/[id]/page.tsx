@@ -1,10 +1,9 @@
 import Link from 'next/link'
 import {notFound} from 'next/navigation'
 import {createClient} from '@supabase/supabase-js'
-import WebsiteInspector from '../../WebsiteInspector'
+import InquiryConsultation from './InquiryConsultation'
+import {consultationScope} from '../../../../lib/consultationScope'
 import InquiryActions from './InquiryActions'
-import DiagnosisReportEditor from './DiagnosisReportEditor'
-import InquiryNaver from './InquiryNaver'
 import {requireStaff} from '../../../../lib/requireStaff'
 
 export const dynamic='force-dynamic'
@@ -17,7 +16,7 @@ async function getReport(id:number){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
  if(!url||!key)return null
  const s=createClient(url,key,{auth:{persistSession:false}})
- const r=await s.from('discovery_diagnosis_reports').select('title,summary,findings,priorities,proposal,status,public_token').eq('inquiry_id',id).maybeSingle()
+ const r=await s.from('discovery_diagnosis_reports').select('title,summary,findings,priorities,proposal,status,public_token,website_snapshot').eq('inquiry_id',id).maybeSingle()
  return r.data as any
 }
 
@@ -55,11 +54,9 @@ export default async function InquiryPage({params}:{params:{id:string}}){
    {inquiry.concerns?.length?<div className="mt-6"><p className="text-sm font-bold">현재 고민</p><div className="mt-2 flex flex-wrap gap-2">{inquiry.concerns.map(x=><span key={x} className="rounded-full bg-gray-100 px-3 py-1 text-xs">{x}</span>)}</div></div>:null}
    {inquiry.message&&<div className="mt-6"><p className="text-sm font-bold">추가 전달 내용</p><p className="mt-2 whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm leading-6 text-gray-600">{inquiry.message}</p></div>}
    </div>
-   <InquiryActions id={inquiry.id} status={inquiry.status} projectId={inquiry.project_id}/>
+   <InquiryActions id={inquiry.id} status={inquiry.status} projectId={inquiry.project_id} services={consultationScope(report?.website_snapshot,inquiry.concerns)}/>
   </section>
-  <WebsiteInspector url={inquiry.website_url}/>
-  <DiagnosisReportEditor id={inquiry.id} initial={report}/>
-  <InquiryNaver inquiryId={inquiry.id} initial={naverHistory}/>
+  {inquiry.project_id?<section className="mb-6 rounded-2xl border border-emerald-200 bg-white p-6"><h2 className="text-xl font-bold">계약 후 관리 단계</h2><p className="mt-2 text-sm text-gray-600">초기 상담 자료는 보관됩니다. 이후 진단·개선·재측정은 연결된 관리 프로젝트에서 진행하세요.</p><Link href={`/discovery/projects/${inquiry.project_id}`} className="mt-4 inline-block rounded-xl bg-[#087A56] px-5 py-3 text-sm font-bold text-white">관리 프로젝트 열기 →</Link>{report?.status==='published'&&<Link href={`/diagnosis/${report.public_token}`} className="ml-3 inline-block text-sm font-bold text-[#087A56]">확정한 초기 상담 보고서 보기 →</Link>}</section>:<InquiryConsultation id={inquiry.id} website={inquiry.website_url} concerns={inquiry.concerns} initial={report} history={naverHistory}/>}
   <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">{inquiry.project_id?`계약 완료 · 관리 프로젝트 #${inquiry.project_id}로 연결되었습니다.`:'계약 완료 시 이 상담 정보를 바탕으로 관리 프로젝트가 자동 생성되고 상담 건과 연결됩니다.'}</p></section>
  </div></div>
 }
