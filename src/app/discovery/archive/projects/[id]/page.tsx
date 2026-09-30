@@ -10,7 +10,7 @@ export default async function ProjectArchive({params}:{params:{id:string}}){
  const s=createClient(url,key,{auth:{persistSession:false}})
  const [p,h,m,t,i]=await Promise.all([
   s.from('discovery_projects').select('name,description').eq('id',id).maybeSingle(),
-  s.from('discovery_analysis_history').select('id,observed,interpreted,created_at').eq('project_id',id).order('created_at',{ascending:false}).limit(20),
+  s.from('discovery_analysis_history').select('id,observed,interpreted,created_at').eq('project_id',id).not('measurement_round','in','("Naver Keyword Suggestions","Naver Keywords")').order('created_at',{ascending:false}).limit(20),
   s.from('discovery_measurements').select('id,channel,is_discovered,measurement_round,result_text,source_urls,created_at').eq('project_id',id).order('created_at',{ascending:false}).limit(100),
   s.from('discovery_improvement_tasks').select('id,title,status,summary,completed_at,created_at').eq('project_id',id).order('created_at',{ascending:false}),
   s.from('discovery_inquiries').select('id').eq('project_id',id)
