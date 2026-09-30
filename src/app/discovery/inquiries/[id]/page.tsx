@@ -44,7 +44,7 @@ async function getQuote(id:number){
  return {document:data?.document,ready:!error}
 }
 
-export default async function InquiryPage({params}:{params:{id:string}}){
+export default async function InquiryPage({params,searchParams}:{params:{id:string};searchParams:{quote?:string}}){
  await requireStaff()
  const inquiry=await getInquiry(Number(params.id)); if(!inquiry)notFound()
  const report=await getReport(inquiry.id)
@@ -73,7 +73,7 @@ export default async function InquiryPage({params}:{params:{id:string}}){
    </div>
    <InquiryActions id={inquiry.id} status={inquiry.status} projectId={inquiry.project_id} services={consultationScope(report?.website_snapshot,inquiry.concerns)}/>
   </section>
-  <QuotationEditor id={inquiry.id} initial={initialQuote} storageReady={savedQuote.ready}/>
+  <QuotationEditor id={inquiry.id} initial={initialQuote} storageReady={savedQuote.ready} initiallyOpen={searchParams.quote==='1'}/>
   {inquiry.project_id?<section className="mb-6 rounded-2xl border border-emerald-200 bg-white p-6"><h2 className="text-xl font-bold">계약 후 관리 단계</h2><p className="mt-2 text-sm text-gray-600">초기 상담 자료는 보관됩니다. 이후 진단·개선·재측정은 연결된 관리 프로젝트에서 진행하세요.</p><Link href={`/discovery/projects/${inquiry.project_id}`} className="mt-4 inline-block rounded-xl bg-[#087A56] px-5 py-3 text-sm font-bold text-white">관리 프로젝트 열기 →</Link>{report?.status==='published'&&<Link href={`/diagnosis/${report.public_token}`} className="ml-3 inline-block text-sm font-bold text-[#087A56]">확정한 초기 상담 보고서 보기 →</Link>}</section>:<InquiryConsultation id={inquiry.id} website={inquiry.website_url} concerns={inquiry.concerns} initial={report} history={naverHistory}/>}
   <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">{inquiry.project_id?`계약 완료 · 관리 프로젝트 #${inquiry.project_id}로 연결되었습니다.`:'계약 완료 시 이 상담 정보를 바탕으로 관리 프로젝트가 자동 생성되고 상담 건과 연결됩니다.'}</p></section>
  </div></div>

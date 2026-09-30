@@ -4,8 +4,8 @@ import {Quotation,quoteStatuses,quoteTotals,validateQuotation} from '../../../..
 const channels=['네이버 웹문서','네이버 블로그','네이버 카페','네이버 지역','네이버 쇼핑','네이버 검색어 트렌드','Gemini API','OpenAI API','Perplexity API','Claude API','ChatGPT 수동 확인','구글 검색 수동 확인']
 const money=(n:number)=>new Intl.NumberFormat('ko-KR').format(n)+'원'
 const field='mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900'
-export default function QuotationEditor({id,initial,storageReady}:{id:number;initial:Quotation;storageReady:boolean}){
- const [q,setQ]=useState(initial),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dirty,setDirty]=useState(false),[open,setOpen]=useState(false)
+export default function QuotationEditor({id,initial,storageReady,initiallyOpen=false}:{id:number;initial:Quotation;storageReady:boolean;initiallyOpen?:boolean}){
+ const [q,setQ]=useState(initial),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dirty,setDirty]=useState(false),[open,setOpen]=useState(initiallyOpen)
  const totals=quoteTotals(q),service=q.ai&&q.naver?'통합 검색 관리':q.naver?'네이버 검색 관리':'AI 검색 관리'
  function update<K extends keyof Quotation>(key:K,value:Quotation[K]){setQ(old=>({...old,[key]:value}));setDirty(true);setMessage('')}
  const text=(key:keyof Quotation,label:string,multiline=false,type='text')=><label className="block text-sm font-semibold text-gray-600">{label}{multiline?<textarea rows={3} className={field} value={String(q[key])} onChange={e=>update(key,e.target.value as never)}/>:<input type={type} className={field} value={String(q[key])} onChange={e=>update(key,e.target.value as never)}/>}</label>
