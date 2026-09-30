@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server'
 import {cookies} from 'next/headers'
 import {createClient} from '@supabase/supabase-js'
 import {randomBytes} from 'node:crypto'
+import {readWebsiteTransfer} from '../../../../../../lib/websiteTransfer'
 import {inspectWebsite} from '../../../../../../lib/websiteInspection'
 import {consultationScope} from '../../../../../../lib/consultationScope'
 import {normalizeQueries,validateRecommendations} from '../../../../../../lib/naverKeywords'
@@ -20,7 +21,11 @@ export async function POST(req:Request,{params}:{params:{id:string}}){
   const {data:existing,error:reportError}=await s.from('discovery_diagnosis_reports').select('*').eq('inquiry_id',id).maybeSingle()
   if(reportError)return NextResponse.json({error:'상담 진단 조회 실패'},{status:500})
   let snapshot={...(existing?.website_snapshot||{})},scope=consultationScope(snapshot,inquiry.concerns),reset=false
-  if(body.action==='scope'){
+  if(body.action==='attach'){
+   const evidence=readWebsiteTransfer(body.transfer,inquiry.website_url)
+   if(!evidence)return NextResponse.json({error:'저장할 홈페이지 자료를 확인하지 못했습니다. 다시 점검해 주세요.'},{status:400})
+   snapshot={...evidence,consultationServices:scope};reset=true
+  }else if(body.action==='scope'){
    if(typeof body.ai!=='boolean'||typeof body.naver!=='boolean'||(!body.ai&&!body.naver))return NextResponse.json({error:'상담 진단 범위를 하나 이상 선택해 주세요.'},{status:400})
    reset=scope.ai!==body.ai||scope.naver!==body.naver;scope={ai:body.ai,naver:body.naver};snapshot.consultationServices=scope
   }else{

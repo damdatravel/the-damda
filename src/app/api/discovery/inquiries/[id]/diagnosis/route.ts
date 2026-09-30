@@ -39,7 +39,10 @@ export async function POST(req:Request,{params}:{params:{id:string}}){
    if(i.project_id)return NextResponse.json({error:'계약된 고객은 관리 프로젝트에서 진행해 주세요.'},{status:409})
    let snapshot=existing.data?.website_snapshot
    if(scope.naver&&!snapshot?.pages?.length)return NextResponse.json({error:'네이버 홈페이지 초기 점검을 먼저 실행해 주세요.'},{status:409})
-   if(!scope.naver)snapshot={...await inspectWebsite(target),consultationServices:scope}
+   if(!scope.naver){
+    const sameWebsite=(()=>{try{return snapshot?.pages?.length&&snapshot.pageCount>0&&new URL(snapshot.website).origin===new URL(target).origin}catch{return false}})()
+    if(!sameWebsite)snapshot={...await inspectWebsite(target),consultationServices:scope}
+   }
    let naverEvidence:any[]=[]
    if(scope.naver){
     const queries=snapshot.naverSelectedQueries||[]
