@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import {notFound} from 'next/navigation'
 import {createClient} from '@supabase/supabase-js'
+import CustomerReportEditor from './CustomerReportEditor'
 import InquiryConsultation from './InquiryConsultation'
 import {consultationScope} from '../../../../lib/consultationScope'
 import InquiryActions from './InquiryActions'
@@ -36,6 +37,7 @@ async function getNaverHistory(id:number){
  const {data}=await s.from('discovery_naver_inquiry_history').select('id,query,interpreted,created_at').eq('inquiry_id',id).order('created_at',{ascending:false}).limit(20)
  return data||[]
 }
+async function getCaseReport(id:number){const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)return null;const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}});const r=await s.from('discovery_case_reports').select('*').eq('inquiry_id',id).maybeSingle();return r.data}
 async function getQuote(id:number){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
  if(!url||!key)return {document:null,ready:false}
@@ -48,6 +50,7 @@ export default async function InquiryPage({params,searchParams}:{params:{id:stri
  await requireStaff()
  const inquiry=await getInquiry(Number(params.id)); if(!inquiry)notFound()
  const report=await getReport(inquiry.id)
+ const caseReport=await getCaseReport(inquiry.id)
  const naverHistory=await getNaverHistory(inquiry.id)
  const savedQuote=await getQuote(inquiry.id),scope=consultationScope(report?.website_snapshot,inquiry.concerns)
  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'}),valid=new Date(Date.now()+14*86400000).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})
@@ -75,6 +78,8 @@ export default async function InquiryPage({params,searchParams}:{params:{id:stri
   </section>
   <QuotationEditor id={inquiry.id} initial={initialQuote} storageReady={savedQuote.ready} initiallyOpen={searchParams.quote==='1'}/>
   {inquiry.project_id?<section className="mb-6 rounded-2xl border border-emerald-200 bg-white p-6"><h2 className="text-xl font-bold">계약 후 관리 단계</h2><p className="mt-2 text-sm text-gray-600">초기 상담 자료는 보관됩니다. 이후 진단·개선·재측정은 연결된 관리 프로젝트에서 진행하세요.</p><Link href={`/discovery/projects/${inquiry.project_id}`} className="mt-4 inline-block rounded-xl bg-[#087A56] px-5 py-3 text-sm font-bold text-white">관리 프로젝트 열기 →</Link>{report?.status==='published'&&<Link href={`/diagnosis/${report.public_token}`} className="ml-3 inline-block text-sm font-bold text-[#087A56]">확정한 초기 상담 보고서 보기 →</Link>}</section>:<InquiryConsultation id={inquiry.id} website={inquiry.website_url} concerns={inquiry.concerns} initial={report} history={naverHistory}/>}
+  {inquiry.project_id&&<CustomerReportEditor id={inquiry.id} initial={caseReport}/>}
+  {caseReport?.closure_history?.length>0&&<section className="mb-6 rounded-2xl border bg-white p-6"><h2 className="text-xl font-bold">미계약 검토 보고 이력 · 내부 기록</h2>{caseReport.closure_history.map((x:any,index:number)=><article key={index} className="mt-4 rounded-xl bg-gray-50 p-4 text-sm leading-6"><p className="font-bold">{x.reason} · {new Date(x.recordedAt).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})}</p><p className="mt-2 whitespace-pre-wrap">고객이 밝힌 사유: {x.customerStatement||'미확인'}</p><p className="mt-2 whitespace-pre-wrap">담당자 검토: {x.analysis}</p><p className="mt-2 whitespace-pre-wrap">후속 계획: {x.followUp||'미정'}</p></article>)}<Link href="/discovery/archive?stage=closed" className="mt-4 inline-block font-bold text-emerald-700">미계약 아카이브 보기 →</Link></section>}
   <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">{inquiry.project_id?`계약 완료 · 관리 프로젝트 #${inquiry.project_id}로 연결되었습니다.`:'계약 완료 시 이 상담 정보를 바탕으로 관리 프로젝트가 자동 생성되고 상담 건과 연결됩니다.'}</p></section>
  </div></div>
 }

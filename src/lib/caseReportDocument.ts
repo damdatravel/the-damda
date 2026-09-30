@@ -1,0 +1,5 @@
+export const closureReasons=['예산·가격','진행 시기','서비스 범위 불일치','다른 업체 선택','내부 결정 보류','연락 중단','고객 사유 미확인','기타'] as const
+export type CustomerReport={title:string;summary:string;findings:string[];priorities:string[];progress:string;nextSteps:string;period:string}
+export function reportFromBaseline(r:any):CustomerReport{return{title:r?.title||'고객 관리 보고서',summary:r?.summary||'',findings:Array.isArray(r?.findings)?r.findings.filter((x:unknown)=>typeof x==='string'):[],priorities:Array.isArray(r?.priorities)?r.priorities.filter((x:unknown)=>typeof x==='string'):[],progress:'',nextSteps:r?.proposal||'',period:''}}
+export function validCustomerReport(r:any):r is CustomerReport{return !!r&&['title','summary','progress','nextSteps','period'].every(k=>typeof r[k]==='string'&&r[k].length<=20000)&&['findings','priorities'].every(k=>Array.isArray(r[k])&&r[k].length<=50&&r[k].every((x:unknown)=>typeof x==='string'&&x.length<=10000))}
+export function validClosure(r:any){return !!r&&closureReasons.includes(r.reason)&&['customerStatement','analysis','followUp'].every(k=>typeof r[k]==='string'&&r[k].length<=10000)&&r.analysis.trim().length>0}
