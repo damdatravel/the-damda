@@ -20,3 +20,5 @@ assert.equal(hotel.siteType,'hotel');assert.equal(hotel.features.length,1);asser
 
 const food=p.cleanWebsiteContext({status:'planning',siteType:'food',mediaSubjects:['대표 메뉴·음식 사진','잘못된 대상']})
 assert.equal(food.mediaSubjects.length,1);assert.match(p.websiteBrief(food),/대표 메뉴·음식 사진/);assert(p.industryMedia.medical.includes('의료진·구성원 프로필'))
+
+assert(p.featuresFor('medical').includes('진료 예약 요청'));assert(!p.featuresFor('medical').includes('객실·요금 안내'));assert(p.featuresFor('food').includes('메뉴·가격 안내'));assert(p.cleanWebsiteContext({status:'planning',siteType:'medical',features:['진료 예약 요청']}).features.includes('진료 예약 요청'))
