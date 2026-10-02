@@ -4,6 +4,8 @@ export function validSearchGoal(g:any){return !!g&&['service','customer','situat
 export function cleanSearchGoal(g:SearchGoal):SearchGoal{return{service:g.service.trim(),customer:g.customer.trim(),situation:g.situation.trim(),area:g.area.trim(),channels:g.channels,examples:g.examples.trim()}}
 export const goalStatuses={draft:'목표 초안',active:'진행 중',achieved:'달성',partial:'부분 달성',unmet:'미달성',paused:'보류',stopped:'종료'} as const
 export type Goal={id:string;sequence:number;search:SearchGoal;baseline:string;workCriteria:string;resultCriteria:string;reviewDate:string;agreement:string;agreementDate:string;status:keyof typeof goalStatuses;result:string;reviewAgreement:string;reviewAgreementDate:string;workComplete:boolean;knownCause:string;hypothesis:string;responsePlan:string;nextReviewDate:string;decision:'continue'|'adjust'|'stop';history:any[]}
+export const MAX_OPEN_GOALS=5
+export function openGoals(goals:Goal[]){return goals.filter(g=>!['achieved','stopped'].includes(g.status))}
 export type Fact={id:string;goalId:string;label:string;value:string;source:string;reason:string;review:'pending'|'verified';resolvedValue?:string;confirmedAt?:string}
 export type Answer={id:string;status:'correct'|'corrected'|'unknown';value:string}
 export type Engagement={goals:Goal[];facts:Fact[];request:any;responses:any[];events:any[]}
@@ -18,6 +20,7 @@ export function applyEngagement(state:Engagement,body:any,now:string,newId:strin
  if(body.action==='goal'){
   if(!validGoal(body.goal))throw Error('목표와 검토 날짜를 확인해 주세요.')
   const old=d.goals.find(g=>g.id===body.goal.id),g={...body.goal,id:old?.id||newId,sequence:old?.sequence||d.goals.length+1,history:old?.history||[]} as Goal
+  if(!['achieved','stopped'].includes(g.status)&&openGoals(d.goals.filter(x=>x.id!==g.id)).length>=MAX_OPEN_GOALS)throw Error('미완료 목표는 최대 5개까지 등록할 수 있습니다. 기존 목표를 검토한 뒤 추가해 주세요.')
   g.search=cleanSearchGoal(g.search)
   if(g.status!=='draft'&&(!g.baseline.trim()||!g.workCriteria.trim()||!g.resultCriteria.trim()||!g.reviewDate||!g.agreement.trim()||!g.agreementDate))throw Error('착수 전에 시작 상태·작업 기준·검색 결과 기준·검토일·고객 합의를 기록해 주세요.')
   if(g.status==='achieved'&&!g.workComplete)throw Error('목표 달성 전에 약속한 작업의 완료 여부를 확인해 주세요.')
@@ -42,4 +45,4 @@ export function applyEngagement(state:Engagement,body:any,now:string,newId:strin
  d.events=[...d.events,{...event,...(body.action==='verify'?{ids:body.ids}:{}),...(body.action==='request'?{requestId:newId}:{})}];return d
 }
 export function publicConfirmation(d:Engagement){const r=d.request;if(!r||!Number.isFinite(Date.parse(r.expiresAt))||Date.parse(r.expiresAt)<Date.now())return null;return{id:r.id,expiresAt:r.expiresAt,facts:r.facts.map((f:Fact)=>({id:f.id,label:f.label,value:f.value,reason:f.reason})),goals:r.goals.map((g:any)=>({sequence:g.sequence,search:cleanSearchGoal(g.search)})),submitted:!!r.answeredAt}}
-export function goalReport(goals:Goal[]){return goals.map(g=>`${g.sequence}차 목표 · ${g.search.service} · ${goalStatuses[g.status]}\n검색 상황: ${g.search.situation}\n채널: ${g.search.channels.join(', ')}\n작업 기준: ${g.workCriteria}\n검색 결과 기준: ${g.resultCriteria}\n검토일: ${g.reviewDate}\n약속한 작업 이행: ${g.workComplete?'완료':'미완료 또는 확인 전'}\n확인 결과: ${g.result||'검토 전'}${['partial','unmet'].includes(g.status)?`\n확인된 원인: ${g.knownCause||'미확인'}\n검증할 가설: ${g.hypothesis||'없음'}\n대응안: ${g.responsePlan}\n다음 검토일: ${g.nextReviewDate}`:''}`).join('\n\n')}
+export function goalReport(goals:Goal[]){const pending=openGoals(goals),active=goals.find(g=>g.status==='active');return `검색 목표 관리\n등록한 미완료 목표: ${pending.length}/${MAX_OPEN_GOALS}개\n현재 진행 목표: ${active?`${active.sequence}차 · ${active.search.service}`:'착수 전 또는 검토 중'}\n대기·보완 목표: ${pending.filter(g=>g.status!=='active').map(g=>`${g.sequence}차 · ${g.search.service} (${goalStatuses[g.status]})`).join(', ')||'없음'}\n한 번에 한 목표를 진행하고, 결과 검토와 고객 협의를 거쳐 다음 목표를 시작합니다. 달성·종료된 목표는 아래 이력으로 보존합니다.\n\n`+goals.map(g=>`${g.sequence}차 목표 · ${g.search.service} · ${goalStatuses[g.status]}\n희망 고객: ${g.search.customer||'미기록'}\n희망 지역: ${g.search.area||'미기록'}\n검색 상황: ${g.search.situation}\n채널: ${g.search.channels.join(', ')}\n작업 기준: ${g.workCriteria}\n검색 결과 기준: ${g.resultCriteria}\n검토일: ${g.reviewDate}\n약속한 작업 이행: ${g.workComplete?'완료':'미완료 또는 확인 전'}\n확인 결과: ${g.result||'검토 전'}${['partial','unmet'].includes(g.status)?`\n확인된 원인: ${g.knownCause||'미확인'}\n검증할 가설: ${g.hypothesis||'없음'}\n대응안: ${g.responsePlan}\n다음 검토일: ${g.nextReviewDate}`:''}`).join('\n\n')}
