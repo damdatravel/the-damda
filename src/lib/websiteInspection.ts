@@ -1,3 +1,4 @@
+import {detectPlatform} from './websitePlatform'
 import {createHash} from 'node:crypto'
 const MAX_PAGES=8
 function clean(s:string){return s.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim()}
@@ -28,5 +29,5 @@ export async function inspectWebsite(target:string,knownUrls?:string[]){
   const pages:any[]=[]
   for(const url of urls){try{const x=url===base.toString()?first:await getHtml(url);const html=x.html;pages.push({url:x.finalUrl,title:pick(html,/<title[^>]*>([\s\S]*?)<\/title>/i),description:pick(html,/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i)||pick(html,/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["'][^>]*>/i),h1:pick(html,/<h1[^>]*>([\s\S]*?)<\/h1>/i),structuredData:structuredTypes(html),hasFaq:/FAQ|자주\s*묻는|질문과\s*답변/i.test(clean(html)),textSample:clean(html).slice(0,900),contentHash:createHash('sha256').update(clean(html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1]||html)).digest('hex')})}catch(e:any){pages.push({url,error:e.message})}}
   const types=[...new Set(pages.flatMap(x=>x.structuredData||[]))]
- return {ok:true,checkedAt:new Date().toISOString(),website:base.origin,pageCount:pages.filter(x=>!x.error).length,sitemapFound:sitemapUrls.length>0,sitemapUrlCount:sitemapUrls.length,structuredDataTypes:types,pages}
+ return {platform:detectPlatform(first.html,first.finalUrl),ok:true,checkedAt:new Date().toISOString(),website:base.origin,pageCount:pages.filter(x=>!x.error).length,sitemapFound:sitemapUrls.length>0,sitemapUrlCount:sitemapUrls.length,structuredDataTypes:types,pages}
 }

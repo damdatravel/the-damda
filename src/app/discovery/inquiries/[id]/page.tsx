@@ -1,3 +1,4 @@
+import WebsiteWorkEditor from './WebsiteWorkEditor'
 import Link from 'next/link'
 import {notFound} from 'next/navigation'
 import {createClient} from '@supabase/supabase-js'
@@ -13,7 +14,7 @@ import {Quotation,validateQuotation} from '../../../../lib/quotation'
 export const dynamic='force-dynamic'
 export const revalidate=0
 
-type Inquiry={id:number;company_name:string;website_url:string;industry:string|null;main_services:string|null;concerns:string[]|null;contact_name:string;phone:string|null;email:string|null;message:string|null;status:string;created_at:string;project_id:number|null}
+type Inquiry={website_context?:any;id:number;company_name:string;website_url:string;industry:string|null;main_services:string|null;concerns:string[]|null;contact_name:string;phone:string|null;email:string|null;message:string|null;status:string;created_at:string;project_id:number|null}
 const statusLabel:Record<string,string>={diagnosis_pending:'진단 대기',reviewing:'진단·검토 중',proposal:'진행 협의',customer_delivery:'고객 전달',quote_drafting:'견적서 작성 중',quote_ready:'견적서 작성 완료',quote_sent:'견적서 전달 완료',contracted:'계약 완료',converted:'프로젝트 전환',closed:'상담 종료'}
 
 async function getReport(id:number){
@@ -28,7 +29,7 @@ async function getInquiry(id:number){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
  if(!url||!key)return null
  const s=createClient(url,key,{auth:{persistSession:false},global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
- const r=await s.from('discovery_inquiries').select('id,company_name,website_url,industry,main_services,concerns,contact_name,phone,email,message,status,created_at,project_id').eq('id',id).single()
+ const r=await s.from('discovery_inquiries').select('id,company_name,website_url,industry,main_services,concerns,contact_name,phone,email,message,status,created_at,project_id,website_context').eq('id',id).single()
  return r.data as Inquiry|null
 }
 async function getNaverHistory(id:number){
@@ -65,7 +66,7 @@ export default async function InquiryPage({params,searchParams}:{params:{id:stri
   <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Consultation Diagnosis</p><h1 className="mt-1 text-3xl font-extrabold">{inquiry.company_name}</h1><p className="mt-2 text-sm text-gray-500">접수 {new Date(inquiry.created_at).toLocaleString('ko-KR')} · {statusLabel[inquiry.status]||inquiry.status}</p></div><Link href="/discovery" className="inline-flex items-center justify-center rounded-xl bg-[#0A0F1E] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90">회사 대시보드로 돌아가기 →</Link></header>
   <section className="mb-6 grid gap-6 lg:grid-cols-[1.3fr_.7fr]">
    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"><p className="text-xs font-bold uppercase tracking-wider text-[#0A9B6C]">Inquiry</p><h2 className="mt-1 text-xl font-extrabold">접수 정보</h2><dl className="mt-5 grid gap-4 text-sm md:grid-cols-2">
-    <div><dt className="text-gray-400">홈페이지</dt><dd className="mt-1 font-bold"><a className="break-all text-[#087A56] hover:underline" href={inquiry.website_url} target="_blank" rel="noopener noreferrer">{inquiry.website_url}</a></dd></div>
+    <div><dt className="text-gray-400">홈페이지</dt><dd className="mt-1 font-bold"><a className="break-all text-[#087A56] hover:underline" href={inquiry.website_url} target="_blank" rel="noopener noreferrer">{inquiry.website_url||'홈페이지 미등록'}</a></dd></div>
     <div><dt className="text-gray-400">업종</dt><dd className="mt-1 font-bold">{inquiry.industry||'미입력'}</dd></div>
     <div className="md:col-span-2"><dt className="text-gray-400">주요 서비스·상품</dt><dd className="mt-1 font-bold">{inquiry.main_services||'미입력'}</dd></div>
     <div><dt className="text-gray-400">담당자</dt><dd className="mt-1 font-bold">{inquiry.contact_name}</dd></div>
@@ -79,7 +80,7 @@ export default async function InquiryPage({params,searchParams}:{params:{id:stri
   </section>
   <EngagementEditor id={inquiry.id} mainServices={inquiry.main_services} contracted={!!inquiry.project_id}/>
   <QuotationEditor id={inquiry.id} initial={initialQuote} storageReady={savedQuote.ready} initiallyOpen={searchParams.quote==='1'}/>
-  {inquiry.project_id?<section className="mb-6 rounded-2xl border border-emerald-200 bg-white p-6"><h2 className="text-xl font-bold">계약 후 관리 단계</h2><p className="mt-2 text-sm text-gray-600">초기 상담 자료는 보관됩니다. 이후 진단·개선·재측정은 연결된 관리 프로젝트에서 진행하세요.</p><Link href={`/discovery/projects/${inquiry.project_id}`} className="mt-4 inline-block rounded-xl bg-[#087A56] px-5 py-3 text-sm font-bold text-white">관리 프로젝트 열기 →</Link>{report?.status==='published'&&<Link href={`/diagnosis/${report.public_token}`} className="ml-3 inline-block text-sm font-bold text-[#087A56]">확정한 초기 상담 보고서 보기 →</Link>}</section>:<InquiryConsultation id={inquiry.id} website={inquiry.website_url} concerns={inquiry.concerns} initial={report} history={naverHistory}/>}
+  <WebsiteWorkEditor id={inquiry.id} initialContext={inquiry.website_context} report={report} company={inquiry.company_name}/>{inquiry.project_id?<section className="mb-6 rounded-2xl border border-emerald-200 bg-white p-6"><h2 className="text-xl font-bold">계약 후 관리 단계</h2><p className="mt-2 text-sm text-gray-600">초기 상담 자료는 보관됩니다. 이후 진단·개선·재측정은 연결된 관리 프로젝트에서 진행하세요.</p><Link href={`/discovery/projects/${inquiry.project_id}`} className="mt-4 inline-block rounded-xl bg-[#087A56] px-5 py-3 text-sm font-bold text-white">관리 프로젝트 열기 →</Link>{report?.status==='published'&&<Link href={`/diagnosis/${report.public_token}`} className="ml-3 inline-block text-sm font-bold text-[#087A56]">확정한 초기 상담 보고서 보기 →</Link>}</section>:<InquiryConsultation id={inquiry.id} website={inquiry.website_url} concerns={inquiry.concerns} initial={report} history={naverHistory}/>}
   {inquiry.project_id&&<CustomerReportEditor id={inquiry.id} initial={caseReport}/>}
   {caseReport?.closure_history?.length>0&&<section className="mb-6 rounded-2xl border bg-white p-6"><h2 className="text-xl font-bold">미계약 검토 보고 이력 · 내부 기록</h2>{caseReport.closure_history.map((x:any,index:number)=><article key={index} className="mt-4 rounded-xl bg-gray-50 p-4 text-sm leading-6"><p className="font-bold">{x.reason} · {new Date(x.recordedAt).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})}</p><p className="mt-2 whitespace-pre-wrap">고객이 밝힌 사유: {x.customerStatement||'미확인'}</p><p className="mt-2 whitespace-pre-wrap">담당자 검토: {x.analysis}</p><p className="mt-2 whitespace-pre-wrap">후속 계획: {x.followUp||'미정'}</p></article>)}<Link href="/discovery/archive?stage=closed" className="mt-4 inline-block font-bold text-emerald-700">미계약 아카이브 보기 →</Link></section>}
   <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-500"><p className="font-bold text-[#0A0F1E]">정식 프로젝트 전환</p><p className="mt-2">{inquiry.project_id?`계약 완료 · 관리 프로젝트 #${inquiry.project_id}로 연결되었습니다.`:'계약 완료 시 이 상담 정보를 바탕으로 관리 프로젝트가 자동 생성되고 상담 건과 연결됩니다.'}</p></section>
