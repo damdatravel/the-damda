@@ -3,6 +3,7 @@ import {useState} from 'react'
 import QuestionGenerator from '../../../questions/QuestionGenerator'
 import DimensionSeeder from './DimensionSeeder'
 import DimensionReview from './DimensionReview'
+import OntologyReview from './OntologyReview'
 
 type Dimension={id:number;dimension_type:string;dimension_value:string;priority:number;is_active:boolean;source?:string;notes?:string}
 export default function QuestionWorkspace({projectId,initialDimensions}:{projectId:number;initialDimensions:Dimension[]}){
@@ -14,6 +15,7 @@ export default function QuestionWorkspace({projectId,initialDimensions}:{project
    <DimensionSeeder projectId={projectId} onDimensions={setDimensions}/>
   </section>
   {dimensions.length>0&&<DimensionReview projectId={projectId} dimensions={dimensions} onDimensions={setDimensions}/>}
+  <OntologyReview projectId={projectId} dimensions={dimensions}/>
   {dimensions.some(x=>x.is_active)?<QuestionGenerator dimensions={dimensions.filter(x=>x.is_active)} projectId={projectId}/>:<section className="rounded-xl border border-dashed border-gray-300 bg-white p-5 text-sm text-gray-600">활성 질문 재료가 없습니다. 위에서 AI Source Profile을 추출해 주세요.</section>}
  </>
 }

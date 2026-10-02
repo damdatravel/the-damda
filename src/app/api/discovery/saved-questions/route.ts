@@ -1,3 +1,5 @@
+import {approvedEdges,allowsCombination} from '../../../../lib/ontology'
+import {readOntology} from '../../../../lib/ontologyStore'
 import {NextResponse} from 'next/server'
 import {cookies} from 'next/headers'
 import {createClient} from '@supabase/supabase-js'
@@ -33,6 +35,7 @@ export async function POST(req:Request){
   if(!project)return NextResponse.json({error:'프로젝트를 찾지 못했습니다.'},{status:404})
   const {data:dimensions,error:de}=await s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value').eq('project_id',projectId).eq('is_active',true)
   if(de)return NextResponse.json({error:de.message},{status:500})
+  const ontology=await readOntology(s,projectId),edges=ontology?approvedEdges(ontology.graph,dimensions||[]):[]
   const byId=new Map((dimensions??[]).map(x=>[x.id,x]))
   const rows=[] as Array<Record<string,unknown>>
   for(const q of questions){
@@ -40,8 +43,10 @@ export async function POST(req:Request){
    const ids=Array.isArray(q.ingredientIds)?[...new Set(q.ingredientIds)]:[]
    const ingredients=ids.map(id=>byId.get(id))
    if(question.length<10||question.length>170||!question.endsWith('?')||!ids.length||ingredients.some(x=>!x)||!ingredients.some(x=>x?.dimension_type==='SERVICE')||new Set(ingredients.map(x=>x?.dimension_type)).size<2)return NextResponse.json({error:'질문 재료가 변경되었습니다. 다시 생성해 주세요.'},{status:400})
+   if(ontology&&!allowsCombination(edges,ids as number[],dimensions||[]))return NextResponse.json({error:'관계의 승인 상태가 변경되었습니다. 질문을 다시 생성해 주세요.'},{status:409})
+   const trace=ontology?JSON.stringify({version:1,updatedAt:ontology.updatedAt,ingredientIds:ids,edges:edges.filter(e=>ids.includes(e.to)&&(e.from===0||ids.includes(e.from)))}):null
    const get=(type:string)=>ingredients.find(x=>x?.dimension_type===type)?.dimension_value??null
-   rows.push({project_id:projectId,question,intent:String(q.intent||'발견/서비스 탐색').slice(0,100),who:get('WHO'),for_whom:get('FOR_WHOM'),where_location:get('WHERE'),purpose:get('PURPOSE'),problem:get('PROBLEM'),action:get('ACTION'),service:get('SERVICE'),dimension_count:ingredients.length,combination_key:`reviewed:${createHash('sha256').update(projectId+'|'+question).digest('hex').slice(0,32)}`,is_duplicate:false,is_benchmark:false,status:'saved',notes:'검토 후 저장'})
+   rows.push({project_id:projectId,question,intent:String(q.intent||'발견/서비스 탐색').slice(0,100),who:get('WHO'),for_whom:get('FOR_WHOM'),where_location:get('WHERE'),purpose:get('PURPOSE'),problem:get('PROBLEM'),action:get('ACTION'),service:get('SERVICE'),dimension_count:ingredients.length,combination_key:`reviewed:${createHash('sha256').update(projectId+'|'+question).digest('hex').slice(0,32)}`,is_duplicate:false,is_benchmark:false,status:'saved',notes:trace?'검토 후 저장 · 관계 근거: '+trace:'검토 후 저장'})
   }
   const {data:existing,error:ee}=await s.from('discovery_questions').select('question').eq('project_id',projectId).in('question',rows.map(x=>x.question))
   if(ee)return NextResponse.json({error:ee.message},{status:500})

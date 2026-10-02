@@ -1,3 +1,5 @@
+import {approvedEdges,allowsCombination} from '../../../../lib/ontology'
+import {readOntology} from '../../../../lib/ontologyStore'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
@@ -25,7 +27,11 @@ export async function POST(req:Request){
   if(pe||de||!project)return NextResponse.json({error:pe?.message||de?.message||'프로젝트를 찾지 못했습니다.'},{status:404})
   const dimensions=(rows??[]) as Dimension[]
   if(!dimensions.some(x=>x.dimension_type==='SERVICE')||dimensions.length<2)return NextResponse.json({error:'활성 서비스 재료와 다른 질문 재료가 필요합니다.'},{status:422})
-  const prompt=`너는 다양한 업종의 소비자가 검색과 AI 서비스에 직접 물어볼 법한 한국어 질문 후보를 만드는 편집자다. 아래 프로젝트 설명은 맥락일 뿐이며, 사실과 조건은 검토된 질문 재료에 있는 것만 사용한다.
+  const ontology=await readOntology(s,projectId),edges=ontology?approvedEdges(ontology.graph,dimensions):[]
+  if(ontology&&!edges.some(e=>e.relation!=='provides'))return NextResponse.json({error:'사용할 수 있는 승인 관계가 없습니다. 개념 관계 검토에서 제공 서비스와 서비스의 대상·지역·조건 관계를 승인해 주세요.'},{status:422})
+  const relationContext=ontology?`관계 기반 모드: 다음 승인 관계만 사용하라. SERVICE는 provides 관계가 있어야 한다. 한 질문에 SERVICE 하나를 사용하고 다른 ingredientIds는 그 SERVICE에서 직접 연결된 to id만 사용하라. 추정이나 미확인 관계, 서로 다른 서비스의 조건을 섞지 마라. 관계: ${JSON.stringify(edges)}`:'기존 재료 기반 모드: 개념 관계 추출 후에는 승인 관계로 조합을 제한한다.'
+  const prompt=`${relationContext}
+너는 다양한 업종의 소비자가 검색과 AI 서비스에 직접 물어볼 법한 한국어 질문 후보를 만드는 편집자다. 아래 프로젝트 설명은 맥락일 뿐이며, 사실과 조건은 검토된 질문 재료에 있는 것만 사용한다.
 프로젝트: ${JSON.stringify(project)}
 검토된 재료: ${JSON.stringify(dimensions)}
 ${count}개 후보를 JSON 객체 {"questions":[{"question":"...","intent":"발견/서비스 탐색","ingredientIds":[1,2,3]}]} 형식으로만 반환한다.
@@ -39,13 +45,15 @@ ${count}개 후보를 JSON 객체 {"questions":[{"question":"...","intent":"발�
   const byId=new Map(dimensions.map(x=>[x.id,x])),seen=new Set<string>()
   const questions=(Array.isArray(parsed.questions)?parsed.questions:[]).flatMap((item:any)=>{
    if(typeof item.question!=='string'||!intents.has(item.intent)||!Array.isArray(item.ingredientIds))return []
+   if(item.ingredientIds.some((id:unknown)=>!Number.isInteger(id)||!byId.has(id as number)))return []
    const question=item.question.trim().replace(/\s+/g,' ')
    const ingredients=[...new Set(item.ingredientIds.filter((id:unknown)=>Number.isInteger(id)))].map(id=>byId.get(id as number)).filter(Boolean) as Dimension[]
+   if(ontology&&!allowsCombination(edges,ingredients.map(x=>x.id),dimensions))return []
    if(question.length<12||question.length>170||!question.endsWith('?')||!ingredients.some(x=>x.dimension_type==='SERVICE')||new Set(ingredients.map(x=>x.dimension_type)).size<2||seen.has(question))return []
    seen.add(question)
-   return [{question,intent:item.intent,mode:ingredients.length>=3?'상황 질문':'기본 질문',ingredients,combinationKey:ingredients.map(x=>x.dimension_type+':'+x.id).sort().join('|')+'|q:'+createHash('sha256').update(question).digest('hex').slice(0,16)}]
+   return [{ontologyTrace:ontology?{updatedAt:ontology.updatedAt,edges:edges.filter(e=>ingredients.some(x=>x.id===e.to)&&(e.from===0||ingredients.some(x=>x.id===e.from)))}:null,question,intent:item.intent,mode:ingredients.length>=3?'상황 질문':'기본 질문',ingredients,combinationKey:ingredients.map(x=>x.dimension_type+':'+x.id).sort().join('|')+'|q:'+createHash('sha256').update(question).digest('hex').slice(0,16)}]
   }).slice(0,count)
   if(!questions.length)return NextResponse.json({error:'검토된 재료로 유효한 질문을 만들지 못했습니다. 질문 재료를 확인해 주세요.'},{status:422})
-  return NextResponse.json({questions})
+  return NextResponse.json({questions,mode:ontology?'ontology':'ingredients'})
  }catch(e:any){return NextResponse.json({error:e?.message||'질문 생성 중 오류가 발생했습니다.'},{status:500})}
 }

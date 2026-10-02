@@ -1,0 +1,17 @@
+export type Dimension={id:number;dimension_type:string;dimension_value:string;is_active?:boolean}
+export const relationLabels={provides:'제공 서비스',serves:'이용 대상',operates_in:'서비스 지역',available_when:'이용 시기',requires:'이용 조건',addresses:'해결하는 문제',supports:'목적·행동'} as const
+export type Relation=keyof typeof relationLabels
+export type Evidence={source:string;quote:string}
+export type Edge={id:string;from:number;to:number;relation:Relation;status:'supported'|'inferred'|'unknown';review:'pending'|'approved'|'rejected';evidence:Evidence[];note:string}
+export type Graph={version:1;nodes:Dimension[];edges:Edge[];sources:Record<string,string>}
+const targets:Record<Relation,string[]>={provides:['SERVICE'],serves:['WHO','FOR_WHOM'],operates_in:['WHERE'],available_when:['WHEN'],requires:['CONDITION','PREFERENCE','URGENCY'],addresses:['PROBLEM'],supports:['PURPOSE','ACTION']}
+export function validEdge(e:any,nodes:Dimension[]):e is Edge{
+ if(!e||typeof e.id!=='string'||!Number.isInteger(e.from)||!Number.isInteger(e.to)||!Object.prototype.hasOwnProperty.call(relationLabels,e.relation))return false
+ const from=nodes.find(n=>n.id===e.from),to=nodes.find(n=>n.id===e.to)
+ return !!to&&targets[e.relation as Relation].includes(to.dimension_type)&&(e.relation==='provides'?e.from===0:from?.dimension_type==='SERVICE')&&['supported','inferred','unknown'].includes(e.status)&&['pending','approved','rejected'].includes(e.review)&&typeof e.note==='string'&&e.note.length<=2000&&Array.isArray(e.evidence)&&e.evidence.length<=10&&e.evidence.every((x:any)=>typeof x.source==='string'&&typeof x.quote==='string'&&x.quote.trim().length>=2&&x.quote.length<=2000)
+}
+export function hasEvidence(e:Edge,sources:Record<string,string>){return e.evidence.length>0&&e.evidence.every(x=>Object.prototype.hasOwnProperty.call(sources,x.source)&&sources[x.source].includes(x.quote))}
+export function currentEdges(graph:Graph,dimensions:Dimension[]){return graph.edges.filter(e=>[e.from,e.to].filter(id=>id!==0).every(id=>{const old=graph.nodes.find(n=>n.id===id),now=dimensions.find(n=>n.id===id);return old&&now&&now.is_active!==false&&old.dimension_type===now.dimension_type&&old.dimension_value===now.dimension_value}))}
+export function approvedEdges(graph:Graph,dimensions:Dimension[]){return currentEdges(graph,dimensions).filter(e=>e.review==='approved'&&e.status==='supported'&&hasEvidence(e,graph.sources))}
+export function allowsCombination(edges:Edge[],ids:number[],dimensions:Dimension[]){const services=ids.filter(id=>dimensions.find(n=>n.id===id)?.dimension_type==='SERVICE');return services.length===1&&ids.every(id=>id===services[0]||edges.some(e=>e.from===services[0]&&e.to===id))&&edges.some(e=>e.from===0&&e.to===services[0]&&e.relation==='provides')}
+export function analysisContext(graph:Graph,dimensions:Dimension[]){const current=currentEdges(graph,dimensions),approved=approvedEdges(graph,dimensions);return{approved:approved.map(e=>({...e,fromLabel:e.from===0?'프로젝트 업체':dimensions.find(n=>n.id===e.from)?.dimension_value,toLabel:dimensions.find(n=>n.id===e.to)?.dimension_value})),needsReview:current.filter(e=>!approved.includes(e)&&e.review!=='rejected').map(e=>({relation:e.relation,from:dimensions.find(n=>n.id===e.from)?.dimension_value||'프로젝트 업체',to:dimensions.find(n=>n.id===e.to)?.dimension_value,status:e.status,note:e.note})),staleCount:graph.edges.length-current.length}}
