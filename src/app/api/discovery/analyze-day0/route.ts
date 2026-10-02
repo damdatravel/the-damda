@@ -1,3 +1,4 @@
+import {projectEngagement} from '../../../../lib/engagementStore'
 import {analysisContext} from '../../../../lib/ontology'
 import {readOntology} from '../../../../lib/ontologyStore'
 import {NextResponse} from 'next/server'
@@ -28,11 +29,17 @@ export async function POST(req:Request){
   if(!rows.length||!rows.some(x=>x.measurements.length))return NextResponse.json({error:'Benchmark의 Day 0 측정 기록이 필요합니다.'},{status:400})
   const channels=[...new Set(rows.flatMap(row=>row.measurements.map((measurement:any)=>measurement.channel)))]
   const hasNaver=channels.includes('Naver Web API')||channels.includes('Naver Search')
+  const engagement=await projectEngagement(s,projectId)
   const ontology=await readOntology(s,projectId)
   const dimensions=ontology?await s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value,is_active').eq('project_id',projectId):null
   if(dimensions?.error)throw Error('분석용 질문 재료 조회 실패')
   const relationships=ontology?analysisContext(ontology.graph,dimensions?.data||[]):null
   const prompt=`너는 검색·AI 발견 개선 분석가다. 다음은 회사 정보와 고정 Benchmark 질문의 Day 0 채널별 측정 결과다. 채널마다 검색 방식과 결과가 다르므로 채널을 구분해서 해석하라.
+희망 검색 목표: ${JSON.stringify(engagement?.searchGoal)}
+목표의 시작 상태·작업 기준·검색 결과 판단 기준: ${JSON.stringify(engagement?.criteria)}
+기준에 필요한 측정이 부족하면 목표 성공·실패를 확정하지 말고 추가 확인을 제안하라.
+직원 검토 후 확정된 고객 사업 사실: ${JSON.stringify(engagement?.confirmedFacts)}
+희망 목표는 사업 사실이나 달성된 결과가 아니다. 목표에 필요한 정보와 측정 결과를 연결하고, 목표 달성 판단은 합의한 기준과 검토로 진행한다.
 관계 근거: ${JSON.stringify(relationships)}
 관계 자료가 있으면 approved의 서비스·대상·지역·조건 연결과 각 evidence의 출처·원문을 인용하여 질문별 필요한 정보를 비교한다. needsReview는 사실이 아니라 확인할 후보이며, 미확인 관계를 서비스 불가나 홈페이지의 확정된 누락으로 단정하지 않는다. 제공된 일부 원문만 확인했으므로 근거를 찾지 못한 것은 '확인 자료에서 미확인'으로 표현한다. 재료 변경으로 제외된 관계(staleCount)는 재검토를 제안한다. 관계 자료가 없으면 관계를 임의로 만들어내지 않는다.
 회사: ${JSON.stringify(p)}

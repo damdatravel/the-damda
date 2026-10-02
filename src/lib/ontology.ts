@@ -3,7 +3,7 @@ export const relationLabels={provides:'제공 서비스',serves:'이용 대상',
 export type Relation=keyof typeof relationLabels
 export type Evidence={source:string;quote:string}
 export type Edge={id:string;from:number;to:number;relation:Relation;status:'supported'|'inferred'|'unknown';review:'pending'|'approved'|'rejected';evidence:Evidence[];note:string}
-export type Graph={version:1;nodes:Dimension[];edges:Edge[];sources:Record<string,string>}
+export type Graph={version:1;nodes:Dimension[];edges:Edge[];sources:Record<string,string>;confirmedFactsVersion?:string}
 const targets:Record<Relation,string[]>={provides:['SERVICE'],serves:['WHO','FOR_WHOM'],operates_in:['WHERE'],available_when:['WHEN'],requires:['CONDITION','PREFERENCE','URGENCY'],addresses:['PROBLEM'],supports:['PURPOSE','ACTION']}
 export function validEdge(e:any,nodes:Dimension[]):e is Edge{
  if(!e||typeof e.id!=='string'||!Number.isInteger(e.from)||!Number.isInteger(e.to)||!Object.prototype.hasOwnProperty.call(relationLabels,e.relation))return false

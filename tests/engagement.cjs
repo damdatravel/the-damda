@@ -1,0 +1,29 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript'),vm=require('node:vm'),m={exports:{}}
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/engagement.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{module:m,exports:m.exports,Date});const e=m.exports,now=new Date().toISOString()
+const goal={id:'',search:{service:'짐 배송',customer:'여행자',situation:'공항에서 호텔로 보내고 싶음',area:'희망 서울',channels:['AI'],examples:''},baseline:'동일 질문 API 미발견 기록',workCriteria:'서비스 안내와 수령 방법 보강',resultCriteria:'동일 질문·동일 채널 3회 재측정 기록 검토',reviewDate:'2026-11-02',agreement:'전화로 기준 확인',agreementDate:'2026-10-02',status:'active',result:'',reviewAgreement:'',reviewAgreementDate:'',workComplete:false,knownCause:'',hypothesis:'',responsePlan:'',nextReviewDate:'',decision:'continue'}
+let d=e.applyEngagement(e.emptyEngagement(),{action:'goal',goal},now,'g1')
+assert.equal(d.goals[0].sequence,1)
+assert.throws(()=>e.applyEngagement(d,{action:'goal',goal},now,'g2'),/진행 중/)
+assert.throws(()=>e.applyEngagement(d,{action:'goal',goal:{...goal,id:'g1',status:'achieved',result:'1회 발견'}},now,'x'),/작업/)
+assert.throws(()=>e.applyEngagement(d,{action:'goal',goal:{...goal,id:'g1',status:'unmet',result:'미발견'}},now,'x'),/협의/)
+assert.throws(()=>e.applyEngagement(d,{action:'goal',goal:{...goal,id:'g1',status:'unmet',result:'미발견',reviewAgreement:'계속 협의',reviewAgreementDate:'2026-10-02'}},now,'x'),/원인/)
+d=e.applyEngagement(d,{action:'goal',goal:{...goal,id:'g1',status:'unmet',result:'동일 조건 재측정 미발견',reviewAgreement:'목표 조정 협의',reviewAgreementDate:'2026-10-02',hypothesis:'안내 부족 가능성',responsePlan:'근거 안내 보강 후 재측정',nextReviewDate:'2026-11-20',decision:'adjust'}},now,'x')
+assert.equal(d.goals[0].history.length,1)
+d=e.applyEngagement(d,{action:'goal',goal},now,'g2');assert.equal(d.goals[1].sequence,2);assert.equal(d.goals[0].status,'unmet')
+const f={id:'f1',goalId:'g1',label:'배송 지역',value:'서울 일부',source:'직원 내부 출처',reason:'희망 지역과 실제 제공 범위를 비교하기 위해',review:'verified',resolvedValue:'고객이 말하지 않은 내용'}
+d=e.applyEngagement(d,{action:'facts',facts:[f]},now,'x');assert.equal(d.facts[0].review,'pending');assert.equal(d.facts[0].resolvedValue,undefined)
+d=e.applyEngagement(d,{action:'request'},now,'request1');const publicView=e.publicConfirmation(d)
+assert(!JSON.stringify(publicView).includes('직원 내부 출처'));assert(!JSON.stringify(publicView).includes('history'))
+assert.equal(e.validAnswers([{id:'f1',status:'corrected',value:''}],d.facts),false)
+assert.equal(e.validAnswers([{id:'foreign',status:'correct',value:''}],d.facts),false)
+d.request.answeredAt=now;d.request.answers=[{id:'f1',status:'unknown',value:''}]
+assert.throws(()=>e.applyEngagement(d,{action:'verify',requestId:'request1',ids:['f1']},now,'x'),/미확인/)
+d.request.answers=[{id:'f1',status:'corrected',value:'서울·인천 지정 호텔'}]
+const changed=e.applyEngagement(d,{action:'facts',facts:[{...f,value:'전국'}]},now,'x')
+assert.throws(()=>e.applyEngagement(changed,{action:'verify',requestId:'request1',ids:['f1']},now,'x'),/변경된/)
+d=e.applyEngagement(d,{action:'verify',requestId:'request1',ids:['f1']},now,'x');assert.equal(d.facts[0].resolvedValue,'서울·인천 지정 호텔')
+const expired=JSON.parse(JSON.stringify(d));expired.request.expiresAt='2020-01-01';assert.equal(e.publicConfirmation(expired),null)
+assert.equal(e.publicConfirmation(e.applyEngagement(d,{action:'revoke'},now,'x')),null)
+assert.equal(e.validSearchGoal({...goal.search,channels:['AI','AI']}),false)
+assert.equal(e.validGoal({...goal,reviewDate:'2026-02-30'}),false)
+console.log('Passed: phased goals, unmet accountability, retained history, wish/fact separation, public projection, answer validation, staff verification, stale-answer rejection, expiry/revocation.')

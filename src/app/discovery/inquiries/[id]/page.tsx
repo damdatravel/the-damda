@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import {notFound} from 'next/navigation'
 import {createClient} from '@supabase/supabase-js'
+import EngagementEditor from './EngagementEditor'
 import CustomerReportEditor from './CustomerReportEditor'
 import InquiryConsultation from './InquiryConsultation'
 import {consultationScope} from '../../../../lib/consultationScope'
@@ -76,6 +77,7 @@ export default async function InquiryPage({params,searchParams}:{params:{id:stri
    </div>
    <InquiryActions id={inquiry.id} status={inquiry.status} projectId={inquiry.project_id} services={consultationScope(report?.website_snapshot,inquiry.concerns)} quoteServices={validateQuotation(savedQuote.document)?{ai:savedQuote.document.ai,naver:savedQuote.document.naver}:undefined}/>
   </section>
+  <EngagementEditor id={inquiry.id} mainServices={inquiry.main_services} contracted={!!inquiry.project_id}/>
   <QuotationEditor id={inquiry.id} initial={initialQuote} storageReady={savedQuote.ready} initiallyOpen={searchParams.quote==='1'}/>
   {inquiry.project_id?<section className="mb-6 rounded-2xl border border-emerald-200 bg-white p-6"><h2 className="text-xl font-bold">계약 후 관리 단계</h2><p className="mt-2 text-sm text-gray-600">초기 상담 자료는 보관됩니다. 이후 진단·개선·재측정은 연결된 관리 프로젝트에서 진행하세요.</p><Link href={`/discovery/projects/${inquiry.project_id}`} className="mt-4 inline-block rounded-xl bg-[#087A56] px-5 py-3 text-sm font-bold text-white">관리 프로젝트 열기 →</Link>{report?.status==='published'&&<Link href={`/diagnosis/${report.public_token}`} className="ml-3 inline-block text-sm font-bold text-[#087A56]">확정한 초기 상담 보고서 보기 →</Link>}</section>:<InquiryConsultation id={inquiry.id} website={inquiry.website_url} concerns={inquiry.concerns} initial={report} history={naverHistory}/>}
   {inquiry.project_id&&<CustomerReportEditor id={inquiry.id} initial={caseReport}/>}

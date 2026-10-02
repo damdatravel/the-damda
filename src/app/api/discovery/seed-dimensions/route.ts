@@ -1,3 +1,4 @@
+import {projectEngagement} from '../../../../lib/engagementStore'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
@@ -46,8 +47,9 @@ export async function POST(req:Request){
     }
    }catch{}
   }
-  const evidence={project,inquiry:inquiry?{concerns:inquiry.concerns,message:inquiry.message,main_services:inquiry.main_services,industry:inquiry.industry}:null,pages}
-  const prompt=`상담 정보와 실제 홈페이지 진단에서 AI Source Profile의 질문 재료를 추출한다. JSON 객체 {"ingredients":[{"type":"WHO","value":"...","source":"project","evidence":"원문 일부"}]}만 반환한다. 허용 type: ${[...types].join(', ')}. source는 project, inquiry, website 중 하나다. value는 해당 source 원문에서 직접 확인되는 구체적 사실이고 evidence는 이를 뒷받침하는 짧은 원문이어야 한다. 홈페이지 URL만 있고 페이지 내용이 없으면 website를 사용하지 마라. WHO는 서비스를 찾는 사람, FOR_WHOM은 서비스 대상, WHERE는 실제 서비스 장소, WHEN은 시간/시기, SERVICE는 제공 서비스, PURPOSE는 소비자의 목적, PROBLEM은 소비자의 문제, CONDITION/PREFERENCE/URGENCY는 소비자가 명시한 조건/선호/긴급성, ACTION은 소비자의 실제 행동이다. 프로젝트의 고객 서비스와 검색 노출 상담 자체를 구분하라. 짐 배송 프로젝트라면 '업체가 검색에 나오지 않음', '홈페이지 유입이 적음', '진단하고 싶음'은 배송 고객의 문제나 목적이 아니다. SERVICE에는 실제 제공하는 서비스명만 짧게 넣고 홍보 문구나 포괄적인 슬로건(어디서든 어디로든, 수거부터 배송까지 책임 등)을 별도 서비스로 추출하지 마라. WHERE에는 출발지와 도착지를 한 문장으로 합치지 말고 각각 확인된 장소만 넣어라. SERVICE나 WHERE에 여러 장소와 시간 조건을 합치지 마라. 사이트 문구는 사실로 확인된 내용만 사용하고 추측한 혜택·요금·예약 조건을 추가하지 마라. 확인되지 않은 항목은 비워 두어라. 자료: ${JSON.stringify(evidence)}`
+  const engagement=await projectEngagement(s,id)
+  const evidence={project,inquiry:inquiry?{concerns:inquiry.concerns,message:inquiry.message,main_services:inquiry.main_services,industry:inquiry.industry,confirmedFacts:engagement?.confirmedFacts}:null,pages}
+  const prompt=`고객 희망 검색 목표(사실 아님): ${JSON.stringify(engagement?.searchGoal)}. 고객이 답하고 직원이 검토한 confirmedFacts는 사업 사실의 별도 출처이며, source inquiry로 원문 그대로 연결한다. 희망 서비스·지역·조건은 검증된 사업 사실로 사용하지 않는다. 목표 관련 재료를 우선한다. 상담 정보와 실제 홈페이지 진단에서 AI Source Profile의 질문 재료를 추출한다. JSON 객체 {"ingredients":[{"type":"WHO","value":"...","source":"project","evidence":"원문 일부"}]}만 반환한다. 허용 type: ${[...types].join(', ')}. source는 project, inquiry, website 중 하나다. value는 해당 source 원문에서 직접 확인되는 구체적 사실이고 evidence는 이를 뒷받침하는 짧은 원문이어야 한다. 홈페이지 URL만 있고 페이지 내용이 없으면 website를 사용하지 마라. WHO는 서비스를 찾는 사람, FOR_WHOM은 서비스 대상, WHERE는 실제 서비스 장소, WHEN은 시간/시기, SERVICE는 제공 서비스, PURPOSE는 소비자의 목적, PROBLEM은 소비자의 문제, CONDITION/PREFERENCE/URGENCY는 소비자가 명시한 조건/선호/긴급성, ACTION은 소비자의 실제 행동이다. 프로젝트의 고객 서비스와 검색 노출 상담 자체를 구분하라. 짐 배송 프로젝트라면 '업체가 검색에 나오지 않음', '홈페이지 유입이 적음', '진단하고 싶음'은 배송 고객의 문제나 목적이 아니다. SERVICE에는 실제 제공하는 서비스명만 짧게 넣고 홍보 문구나 포괄적인 슬로건(어디서든 어디로든, 수거부터 배송까지 책임 등)을 별도 서비스로 추출하지 마라. WHERE에는 출발지와 도착지를 한 문장으로 합치지 말고 각각 확인된 장소만 넣어라. SERVICE나 WHERE에 여러 장소와 시간 조건을 합치지 마라. 사이트 문구는 사실로 확인된 내용만 사용하고 추측한 혜택·요금·예약 조건을 추가하지 마라. 확인되지 않은 항목은 비워 두어라. 자료: ${JSON.stringify(evidence)}`
   const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:prompt})})
   const raw=await response.json()
   if(!response.ok)return NextResponse.json({error:raw?.error?.message||'질문 재료 분석 오류'},{status:502})

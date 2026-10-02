@@ -1,3 +1,4 @@
+import {projectEngagement} from '../../../../lib/engagementStore'
 import {approvedEdges,allowsCombination} from '../../../../lib/ontology'
 import {readOntology} from '../../../../lib/ontologyStore'
 import {NextResponse} from 'next/server'
@@ -27,10 +28,11 @@ export async function POST(req:Request){
   if(pe||de||!project)return NextResponse.json({error:pe?.message||de?.message||'프로젝트를 찾지 못했습니다.'},{status:404})
   const dimensions=(rows??[]) as Dimension[]
   if(!dimensions.some(x=>x.dimension_type==='SERVICE')||dimensions.length<2)return NextResponse.json({error:'활성 서비스 재료와 다른 질문 재료가 필요합니다.'},{status:422})
+  const engagement=await projectEngagement(s,projectId)
   const ontology=await readOntology(s,projectId),edges=ontology?approvedEdges(ontology.graph,dimensions):[]
   if(ontology&&!edges.some(e=>e.relation!=='provides'))return NextResponse.json({error:'사용할 수 있는 승인 관계가 없습니다. 개념 관계 검토에서 제공 서비스와 서비스의 대상·지역·조건 관계를 승인해 주세요.'},{status:422})
   const relationContext=ontology?`관계 기반 모드: 다음 승인 관계만 사용하라. SERVICE는 provides 관계가 있어야 한다. 한 질문에 SERVICE 하나를 사용하고 다른 ingredientIds는 그 SERVICE에서 직접 연결된 to id만 사용하라. 추정이나 미확인 관계, 서로 다른 서비스의 조건을 섞지 마라. 관계: ${JSON.stringify(edges)}`:'기존 재료 기반 모드: 개념 관계 추출 후에는 승인 관계로 조합을 제한한다.'
-  const prompt=`${relationContext}
+  const prompt=`희망 검색 목표: ${JSON.stringify(engagement?.searchGoal)}. 고객 목표에 관련된 상황을 우선하되, 희망 지역·대상·조건을 사업 사실로 단정하거나 새로운 재료로 쓰지 마라. ${relationContext}
 너는 다양한 업종의 소비자가 검색과 AI 서비스에 직접 물어볼 법한 한국어 질문 후보를 만드는 편집자다. 아래 프로젝트 설명은 맥락일 뿐이며, 사실과 조건은 검토된 질문 재료에 있는 것만 사용한다.
 프로젝트: ${JSON.stringify(project)}
 검토된 재료: ${JSON.stringify(dimensions)}
