@@ -1,3 +1,4 @@
+import {compareMeasurements} from '../../../../lib/measurementComparison'
 import {projectEngagement} from '../../../../lib/engagementStore'
 import {analysisContext} from '../../../../lib/ontology'
 import {readOntology} from '../../../../lib/ontologyStore'
@@ -7,6 +8,7 @@ import {cookies} from 'next/headers'
 export async function POST(req:Request){
  try{
   const body=await req.json().catch(()=>({}))
+  const comparisonMode=body.mode==='comparison'
   const projectId=Number(body.projectId)
   if(!Number.isInteger(projectId)||projectId<1)return NextResponse.json({error:'올바른 프로젝트가 아닙니다.'},{status:400})
   const apiKey=process.env.OPENAI_API_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL,publishable=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,key=process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -20,21 +22,27 @@ export async function POST(req:Request){
   const [{data:p},{data:b},{data:m,error:me}]=await Promise.all([
    s.from('discovery_projects').select('name,website_url,industry,main_services,target_customer,service_area,description').eq('id',projectId).single(),
    s.from('discovery_questions').select('id,question').eq('project_id',projectId).eq('is_benchmark',true).order('id'),
-   s.from('discovery_measurements').select('question_id,channel,is_discovered,result_text,source_urls,notes,created_at').eq('project_id',projectId).eq('measurement_round','Day 0').order('created_at',{ascending:false})
+   s.from('discovery_measurements').select('id,question_id,channel,measurement_round,is_discovered,result_text,source_urls,notes,created_at').eq('project_id',projectId).order('created_at',{ascending:false})
   ])
   if(me)return NextResponse.json({error:me.message},{status:500})
   if(!p)return NextResponse.json({error:'프로젝트를 찾지 못했습니다.'},{status:404})
-  const latest=new Map<string,any>();for(const x of m??[]){const key=`${x.question_id}:${x.channel}`;if(!latest.has(key))latest.set(key,x)}
+  const latest=new Map<string,any>();for(const x of (m??[]).filter(x=>x.measurement_round==='Day 0')){const key=`${x.question_id}:${x.channel}`;if(!latest.has(key))latest.set(key,x)}
   const rows=(b??[]).map(q=>({question:q.question,measurements:[...latest.entries()].filter(([key])=>key.startsWith(`${q.id}:`)).map(([,value])=>value)}))
   if(!rows.length||!rows.some(x=>x.measurements.length))return NextResponse.json({error:'Benchmark의 Day 0 측정 기록이 필요합니다.'},{status:400})
-  const channels=[...new Set(rows.flatMap(row=>row.measurements.map((measurement:any)=>measurement.channel)))]
+  const comparison=compareMeasurements(b??[],m??[])
+  const comparableCount=comparison.reduce((n,q)=>n+q.measurements.filter(x=>x.comparable).length,0)
+  if(comparisonMode&&!comparableCount)return NextResponse.json({error:'같은 Benchmark·채널의 Day 0 이후 측정 기록이 필요합니다.'},{status:400})
+  const channels=[...new Set((comparisonMode?comparison:rows).flatMap(row=>row.measurements.map((measurement:any)=>measurement.channel)))]
   const hasNaver=channels.includes('Naver Web API')||channels.includes('Naver Search')
   const engagement=await projectEngagement(s,projectId)
   const ontology=await readOntology(s,projectId)
   const dimensions=ontology?await s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value,is_active').eq('project_id',projectId):null
   if(dimensions?.error)throw Error('분석용 질문 재료 조회 실패')
   const relationships=ontology?analysisContext(ontology.graph,dimensions?.data||[]):null
-  const prompt=`너는 검색·AI 발견 개선 분석가다. 다음은 회사 정보와 고정 Benchmark 질문의 Day 0 채널별 측정 결과다. 채널마다 검색 방식과 결과가 다르므로 채널을 구분해서 해석하라.
+  const comparisonInstructions=comparisonMode?`이번 분석은 최초 Day 0와 최신 측정의 비교다. 동일 질문·동일 채널별 최초 Day 0를 기준으로 삼았다. 다음 구조의 baseline과 latest의 날짜, measurement_round, 발견 여부, 응답 원문, 출처와 notes를 비교하라: ${JSON.stringify(comparison)}
+comparable=false는 재측정 대기 또는 기준 없음이므로 성공·실패 변화에 포함하지 마라. null은 판단 보류다. 단일 관찰의 변화는 장기 성과나 개선 작업의 인과관계를 증명하지 않는다. 측정 방식·모델·조건이 달라졌다면 직접 비교의 한계를 명시하고 같은 조건의 재측정을 제안하라. 합의된 목표 기준 충족 여부와 부족한 근거를 구분하라. [요약] 다음에 [최초·최신 비교]를 넣어 질문·채널·두 측정 날짜·관찰 변화를 설명하고, [목표 점검]에서 현재 목표 기준·관찰·다음 확인을 정리하라. [우선 개선안]에는 최신 상태에서 필요한 다음 작업을 제안하라.`:''
+  const prompt=`${comparisonInstructions}
+너는 검색·AI 발견 개선 분석가다. 다음은 회사 정보와 고정 Benchmark 질문의 ${comparisonMode?'최초·최신 비교를 위한 기준':'Day 0'} 채널별 측정 결과다. 채널마다 검색 방식과 결과가 다르므로 채널을 구분해서 해석하라.
 희망 검색 목표: ${JSON.stringify(engagement?.searchGoal)}
 목표의 시작 상태·작업 기준·검색 결과 판단 기준: ${JSON.stringify(engagement?.criteria)}
 기준에 필요한 측정이 부족하면 목표 성공·실패를 확정하지 말고 추가 확인을 제안하라.
@@ -51,6 +59,7 @@ ${hasNaver?'네이버 측정이 있으므로 네이버 측정의 근거를 다�
 한국어로 다음 형식만 출력하라.
 [요약]
 3~5문장
+${comparisonMode?'[최초·최신 비교]\n- 질문 | 채널 | 최초 날짜·관찰 | 최신 날짜·관찰 | 변화 또는 비교 대기\n[목표 점검]\n- 합의한 기준 | 확인된 관찰 | 부족한 근거와 다음 확인':''}
 [공통 부족정보]
 - ...
 [우선 개선안]
@@ -65,6 +74,6 @@ API와 실제 화면의 차이, 수집·색인 미확인 상태, 재측정 시 �
   const raw=await r.json();if(!r.ok)return NextResponse.json({error:raw?.error?.message||'OpenAI 분석 오류'},{status:502})
   const text=(raw.output??[]).filter((x:any)=>x.type==='message').flatMap((x:any)=>x.content??[]).filter((x:any)=>x.type==='output_text').map((x:any)=>x.text||'').join('\n').trim()
   if(!text)return NextResponse.json({error:'분석 결과를 찾지 못했습니다.'},{status:502})
-  return NextResponse.json({ok:true,analysis:text,observed:rows,benchmarkCount:(b??[]).length,measurementCount:rows.reduce((count,x)=>count+x.measurements.length,0)})
+  return NextResponse.json({ok:true,analysis:text,measurementRound:comparisonMode?'Comparison':'Day 0',observed:comparisonMode?comparison:rows,comparableCount,benchmarkCount:(b??[]).length,measurementCount:rows.reduce((count,x)=>count+x.measurements.length,0)})
  }catch(e:any){return NextResponse.json({error:e?.message||'분석 중 오류가 발생했습니다.'},{status:500})}
 }

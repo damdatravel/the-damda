@@ -16,7 +16,7 @@ export async function GET(req:Request){
  if(!Number.isInteger(projectId)||projectId<1)return NextResponse.json({error:'올바른 프로젝트가 아닙니다.'},{status:400})
  let query=s.from('discovery_analysis_history').select('id,project_id,measurement_round,observed,interpreted,created_at').eq('project_id',projectId)
  if(round==='Naver')query=query.in('measurement_round',['Naver','Naver Approved'])
- else query=query.not('measurement_round','in','("Naver Keyword Suggestions","Naver Keywords")')
+ else query=query.in('measurement_round',['Day 0','Comparison'])
  const {data,error}=await query.order('created_at',{ascending:false}).limit(20)
  return error?NextResponse.json({error:error.message},{status:500}):NextResponse.json({history:data??[]})
 }
@@ -25,6 +25,6 @@ export async function POST(req:Request){
  const body=await req.json().catch(()=>({})),projectId=Number(body.projectId),analysis=String(body.analysis||'')
  if(!Number.isInteger(projectId)||projectId<1||!analysis.trim()||analysis.length>30000)return NextResponse.json({error:'분석 기록을 확인해 주세요.'},{status:400})
  const observed=Array.isArray(body.observed)?body.observed.slice(0,100):[]
- const {data,error}=await s.from('discovery_analysis_history').insert({project_id:projectId,measurement_round:'Day 0',observed,interpreted:analysis}).select('id,created_at').single()
+ const {data,error}=await s.from('discovery_analysis_history').insert({project_id:projectId,measurement_round:body.measurementRound==='Comparison'?'Comparison':'Day 0',observed,interpreted:analysis}).select('id,created_at').single()
  return error?NextResponse.json({error:error.message},{status:500}):NextResponse.json({ok:true,history:data})
 }
