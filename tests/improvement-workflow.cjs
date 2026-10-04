@@ -11,6 +11,7 @@ const post=b=>route.POST({json:async()=>({projectId:1,sourceId:10,...b})})
  assert.equal((await post({action:'update',revision:0,taskId:id,patch:{status:'approved'}})).status,409)
  assert.equal((await post({action:'update',revision:w.revision,taskId:id,patch:{status:'applied',application:'改'}})).status,400)
  assert.equal((await post({action:'update',revision:w.revision,taskId:id,patch:{status:'approved'}})).status,200);w=lib.readWorkflow(row.observed)
+ assert.equal((await post({action:'update',revision:w.revision,taskId:id,patch:{reviewNote:'서비스 범위 확인. 대상 고객 표현 수정 요청'}})).status,200);w=lib.readWorkflow(row.observed);assert.equal(w.tasks[0].reviewNote,'서비스 범위 확인. 대상 고객 표현 수정 요청');assert.equal(w.tasks[0].status,'approved');assert.equal(w.tasks[0].appliedAt,null)
  assert.equal((await post({action:'update',revision:w.revision,taskId:id,patch:{status:'applied'}})).status,400)
  assert.equal((await post({action:'update',revision:w.revision,taskId:id,patch:{status:'applied',application:'목표 질문 검토 적용'}})).status,200);w=lib.readWorkflow(row.observed)
  const applied=w.tasks[0].appliedAt

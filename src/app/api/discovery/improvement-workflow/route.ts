@@ -46,8 +46,8 @@ export async function POST(req:Request){
  if(['applied','reviewed'].includes(t.status)&&Object.keys(p).some(k=>!['status','outcome'].includes(k)))return NextResponse.json({error:'적용 후에는 작업 정의를 변경할 수 없습니다. 새 과제로 검토해 주세요.'},{status:409})
  const allowed:Record<string,string[]>={pending:['approved','hold'],approved:['pending','hold','applied'],hold:['pending'],applied:['reviewed'],reviewed:[]}
  if(p.status&&p.status!==t.status&&!allowed[t.status].includes(p.status))return NextResponse.json({error:'과제 진행 순서를 확인해 주세요.'},{status:400})
- for(const k of ['title','reason','action','expected','remeasure','draft','application','outcome'])if(k in p&&(typeof p[k]!=='string'||p[k].length>20000))return NextResponse.json({error:'과제 내용이 올바르지 않습니다.'},{status:400})
- const next={...t,...Object.fromEntries(['title','reason','action','expected','remeasure','draft','application','outcome','status'].filter(k=>k in p).map(k=>[k,p[k]])),updatedAt:new Date().toISOString()} as NextTask
+ for(const k of ['title','reason','action','expected','remeasure','draft','reviewNote','application','outcome'])if(k in p&&(typeof p[k]!=='string'||p[k].length>20000))return NextResponse.json({error:'과제 내용이 올바르지 않습니다.'},{status:400})
+ const next={...t,...Object.fromEntries(['title','reason','action','expected','remeasure','draft','reviewNote','application','outcome','status'].filter(k=>k in p).map(k=>[k,p[k]])),updatedAt:new Date().toISOString()} as NextTask
  if(!next.title.trim()||!next.action.trim())return NextResponse.json({error:'제목과 할 일을 입력해 주세요.'},{status:400})
  if(p.draft&&t.status!=='approved')return NextResponse.json({error:'승인된 과제에서만 초안을 저장할 수 있습니다.'},{status:409})
  if(p.status==='applied'){if(!next.application.trim())return NextResponse.json({error:'실제 적용 내용과 URL을 기록해 주세요.'},{status:400});next.appliedAt=new Date().toISOString()}

@@ -1,4 +1,4 @@
-export type NextTask={id:string;title:string;reason:string;action:string;expected:string;remeasure:string;status:'pending'|'approved'|'hold'|'applied'|'reviewed';draft:string;application:string;appliedAt:string|null;measurementIds:number[];outcome:string;updatedAt:string}
+export type NextTask={id:string;title:string;reason:string;action:string;expected:string;remeasure:string;status:'pending'|'approved'|'hold'|'applied'|'reviewed';draft:string;reviewNote?:string;application:string;appliedAt:string|null;measurementIds:number[];outcome:string;updatedAt:string}
 export type Workflow={revision:number;tasks:NextTask[]}
 export function readWorkflow(observed:any[]):Workflow|null{return observed.find(x=>x?.kind==='improvement-workflow')?.workflow||null}
 export function proposals(text:string,source:number):NextTask[]{
