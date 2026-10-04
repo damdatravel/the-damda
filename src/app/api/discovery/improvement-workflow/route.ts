@@ -1,3 +1,6 @@
+import {projectContext} from '../../../../lib/discovery/contextStore'
+import {contextImpact} from '../../../../lib/discovery/contextVersion'
+import {originalEvidence,measurementReferences,attachWorkflow} from '../../../../lib/discovery/evidence'
 import {validAssessment,validAdditionalWork,naverComparable} from '../../../../lib/workPlan'
 import {NextResponse} from 'next/server'
 import {cookies} from 'next/headers'
@@ -19,8 +22,9 @@ export async function GET(req:Request){
  const rounds=[...(project.data.ai_management?['Comparison','Day 0']:[]),...(project.data.naver_management?['Naver']:[])]
  const r=await s.from('discovery_analysis_history').select('id,observed,created_at,measurement_round').eq('project_id',projectId).in('measurement_round',rounds).order('id',{ascending:false}).limit(100)
  if(r.error)return NextResponse.json({error:'개선 과제 조회 실패'},{status:500})
+ const currentContext=await projectContext(s,projectId)
  const inquiry=await s.from('discovery_inquiries').select('id').eq('project_id',projectId).in('status',['contracted','converted']).limit(1)
- return NextResponse.json({batches:(r.data||[]).flatMap(x=>{const workflow=readWorkflow(x.observed||[]);return workflow?[{sourceId:x.id,createdAt:x.created_at,sourceRound:x.measurement_round,references:(x.observed||[]).flatMap((r:any)=>r.measurements||[]).map((r:any)=>r.latest||r).filter((r:any)=>r.question_id&&r.channel),...workflow}]:[]}),inquiryId:inquiry.data?.[0]?.id||null,naverHistory:project.data.naver_management?await s.from('discovery_analysis_history').select('id,observed,created_at').eq('project_id',projectId).eq('measurement_round','Naver').order('id',{ascending:false}).limit(100).then(x=>{if(x.error)throw Error('네이버 재조회 기록 확인 실패');return (x.data||[]).map(row=>({...row,observed:(row.observed||[]).filter((v:any)=>v.kind!=='improvement-workflow')}))}):[]})
+ return NextResponse.json({batches:(r.data||[]).flatMap(x=>{const workflow=readWorkflow(x.observed||[]);return workflow?[{sourceId:x.id,createdAt:x.created_at,sourceRound:x.measurement_round,engineRuns:(x.observed||[]).find((r:any)=>r.kind==='engine-runs')?.runs||[],inputImpact:contextImpact(x.observed||[],currentContext),references:measurementReferences(x.observed),...workflow}]:[]}),inquiryId:inquiry.data?.[0]?.id||null,naverHistory:project.data.naver_management?await s.from('discovery_analysis_history').select('id,observed,created_at').eq('project_id',projectId).eq('measurement_round','Naver').order('id',{ascending:false}).limit(100).then(x=>{if(x.error)throw Error('네이버 재조회 기록 확인 실패');return (x.data||[]).map(row=>({...row,observed:originalEvidence(row.observed)}))}):[]})
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'개선 과제 조회 실패'},{status:500})}
 }
 export async function POST(req:Request){
@@ -59,10 +63,11 @@ export async function POST(req:Request){
  if(('assessment' in p||'additionalWork' in p)&&(!p.draft||t.status!=='approved'))return NextResponse.json({error:'작업 판단은 승인된 과제의 초안과 함께 저장합니다.'},{status:409})
  const next={...t,...Object.fromEntries(['title','reason','action','expected','remeasure','draft','reviewNote','assessment','additionalWork','application','outcome','status'].filter(k=>k in p).map(k=>[k,p[k]])),updatedAt:new Date().toISOString()} as NextTask
  if(['title','reason','action','expected','remeasure'].some(k=>k in p&&p[k]!==t[k as keyof NextTask])){next.draft='';next.assessment={status:'needs_evidence',reason:'작업 정의가 변경되었습니다. 근거·수정안을 다시 준비해 주세요.'};next.additionalWork=null}
+ if(p.draft){const current=await projectContext(s,projectId);if(p.generationContext&&contextImpact([p.generationContext],current).status!=='current')return NextResponse.json({error:'초안 생성 중 입력 기준이 변경되었습니다. 수정안을 다시 준비해 주세요.'},{status:409});next.draftContext=current}
  if(!next.title.trim()||!next.action.trim())return NextResponse.json({error:'제목과 할 일을 입력해 주세요.'},{status:400})
  if(p.draft&&t.status!=='approved')return NextResponse.json({error:'승인된 과제에서만 초안을 저장할 수 있습니다.'},{status:409})
  if(next.additionalWork&&next.assessment?.status!=='ready')next.additionalWork=null
- if(p.status==='applied'){if(next.assessment&&next.assessment.status!=='ready')return NextResponse.json({error:'추가 근거 확인·보류 과제는 수정안을 다시 검토한 후 적용해 주세요.'},{status:409});if(!next.application.trim())return NextResponse.json({error:'실제 적용 내용과 URL을 기록해 주세요.'},{status:400});next.appliedAt=new Date().toISOString()}
+ if(p.status==='applied'){if(next.draftContext&&contextImpact([next.draftContext],await projectContext(s,projectId)).status==='changed')return NextResponse.json({error:'수정안 준비 후 고객 정보·목표·질문 기준이 변경되었습니다. 관련 내용을 검토하고 수정안을 다시 준비해 주세요.'},{status:409});if(next.assessment&&next.assessment.status!=='ready')return NextResponse.json({error:'추가 근거 확인·보류 과제는 수정안을 다시 검토한 후 적용해 주세요.'},{status:409});if(!next.application.trim())return NextResponse.json({error:'실제 적용 내용과 URL을 기록해 주세요.'},{status:400});next.appliedAt=new Date().toISOString()}
  if(p.status==='reviewed'){
   if(!next.outcome.trim()||!Array.isArray(b.measurementIds)||!b.measurementIds.length||b.measurementIds.length>50)return NextResponse.json({error:'재측정 기록과 결과 해석을 선택해 주세요.'},{status:400})
   if(r.data.measurement_round==='Naver'){
@@ -72,17 +77,18 @@ export async function POST(req:Request){
   }else{
   const mr=await s.from('discovery_measurements').select('id,question_id,channel,created_at').eq('project_id',projectId).in('id',b.measurementIds).gt('created_at',t.appliedAt!)
   const qm=await s.from('discovery_questions').select('id').eq('project_id',projectId).eq('is_benchmark',true)
-  const evidence=observed.flatMap((x:any)=>x.measurements||[]).map((x:any)=>x.latest||x).filter((x:any)=>x.question_id&&x.channel)
+  const evidence=measurementReferences(observed)
   if(mr.error||qm.error||mr.data?.length!==new Set(b.measurementIds).size||mr.data.some(x=>!qm.data?.some(q=>q.id===x.question_id)||!evidence.some(e=>e.question_id===x.question_id&&e.channel===x.channel)))return NextResponse.json({error:'적용 후 같은 원본 Benchmark·채널로 측정한 기록이 필요합니다.'},{status:400})
   next.measurementIds=b.measurementIds
   }
  }
  tasks=tasks.map((x,n)=>n===i?next:x)
  }else if(b.action!=='init')return NextResponse.json({error:'지원하지 않는 작업입니다.'},{status:400})
- const workflow={revision:(previous?.revision||0)+1,tasks},audit=observed.find(x=>x?.kind==='improvement-workflow')?.audit||[],nextObserved=[...observed.filter(x=>x?.kind!=='improvement-workflow'),{kind:'improvement-workflow',workflow,audit:[...audit,{at:new Date().toISOString(),action:b.action,taskId:b.taskId||null,previous:previous||null}]}]
+ const workflow={revision:(previous?.revision||0)+1,tasks},audit=observed.find(x=>x?.kind==='improvement-workflow')?.audit||[],nextObserved=attachWorkflow(observed,{kind:'improvement-workflow',workflow,audit:[...audit,{at:new Date().toISOString(),action:b.action,taskId:b.taskId||null,previous:previous||null}]})
  const workflowIndex=observed.findIndex(x=>x?.kind==='improvement-workflow')
  let update=s.from('discovery_analysis_history').update({observed:nextObserved}).eq('id',sourceId).eq('project_id',projectId)
  update=previous?update.eq(`observed->${workflowIndex}->workflow->>revision`,String(previous.revision)):update.is(`observed->${observed.length}->workflow`,'null')
+ const runIndex=observed.findIndex(x=>x?.kind==='engine-runs');if(runIndex>=0)update=update.eq(`observed->${runIndex}->>revision`,String(observed[runIndex].revision));else update=update.is(`observed->${observed.length}`,'null')
  const saved=await update.select('id').maybeSingle()
  if(saved.error||!saved.data)return NextResponse.json({error:'동시 변경 또는 저장 오류입니다. 새로고침 후 확인해 주세요.'},{status:409})
  return NextResponse.json({ok:true,workflow})
