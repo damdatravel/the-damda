@@ -15,7 +15,7 @@ export async function GET(req:Request){
  const r=await s.from('discovery_analysis_history').select('id,observed,created_at').eq('project_id',projectId).in('measurement_round',['Comparison','Day 0']).order('id',{ascending:false}).limit(100)
  if(r.error)return NextResponse.json({error:'개선 과제 조회 실패'},{status:500})
  const inquiry=await s.from('discovery_inquiries').select('id').eq('project_id',projectId).in('status',['contracted','converted']).limit(1)
- return NextResponse.json({batches:(r.data||[]).flatMap(x=>{const workflow=readWorkflow(x.observed||[]);return workflow?[{sourceId:x.id,createdAt:x.created_at,...workflow}]:[]}),inquiryId:inquiry.data?.[0]?.id||null})
+ return NextResponse.json({batches:(r.data||[]).flatMap(x=>{const workflow=readWorkflow(x.observed||[]);return workflow?[{sourceId:x.id,createdAt:x.created_at,references:(x.observed||[]).flatMap((r:any)=>r.measurements||[]).map((r:any)=>r.latest||r).filter((r:any)=>r.question_id&&r.channel),...workflow}]:[]}),inquiryId:inquiry.data?.[0]?.id||null})
 }
 export async function POST(req:Request){
  try{

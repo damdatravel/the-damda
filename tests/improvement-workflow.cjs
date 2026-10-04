@@ -22,3 +22,7 @@ const post=b=>route.POST({json:async()=>({projectId:1,sourceId:10,...b})})
  auth=false;assert.equal((await post({action:'init'})).status,401)
  console.log('Passed: persisted lifecycle, stale revision, premature apply, required application evidence, same-channel remeasurement, original measurement preservation, report summary and staff authentication.')
 })().catch(e=>{console.error(e);process.exitCode=1})
+const refs=[{question_id:3,channel:'Gemini',is_discovered:false,created_at:'2026-09-01'}]
+assert(lib.measurementOutcome(refs,[{question_id:3,channel:'Gemini',is_discovered:false,created_at:'2026-10-01'}]).includes('미발견 유지'))
+assert(lib.measurementOutcome(refs,[{question_id:3,channel:'Gemini',is_discovered:null,created_at:'2026-10-01'}]).includes('판단 보류'))
+assert(lib.measurementOutcome(refs,[{question_id:3,channel:'Gemini',is_discovered:true,created_at:'2026-10-01'}]).includes('신규 발견'))
