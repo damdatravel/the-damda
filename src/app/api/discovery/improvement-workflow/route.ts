@@ -62,7 +62,10 @@ export async function POST(req:Request){
  tasks=tasks.map((x,n)=>n===i?next:x)
  }else if(b.action!=='init')return NextResponse.json({error:'지원하지 않는 작업입니다.'},{status:400})
  const workflow={revision:(previous?.revision||0)+1,tasks},audit=observed.find(x=>x?.kind==='improvement-workflow')?.audit||[],nextObserved=[...observed.filter(x=>x?.kind!=='improvement-workflow'),{kind:'improvement-workflow',workflow,audit:[...audit,{at:new Date().toISOString(),action:b.action,taskId:b.taskId||null,previous:previous||null}]}]
- const saved=await s.from('discovery_analysis_history').update({observed:nextObserved}).eq('id',sourceId).eq('project_id',projectId).eq('observed',JSON.stringify(observed)).select('id').maybeSingle()
+ const workflowIndex=observed.findIndex(x=>x?.kind==='improvement-workflow')
+ let update=s.from('discovery_analysis_history').update({observed:nextObserved}).eq('id',sourceId).eq('project_id',projectId)
+ update=previous?update.eq(`observed->${workflowIndex}->workflow->>revision`,String(previous.revision)):update.is(`observed->${observed.length}->workflow`,'null')
+ const saved=await update.select('id').maybeSingle()
  if(saved.error||!saved.data)return NextResponse.json({error:'동시 변경 또는 저장 오류입니다. 새로고침 후 확인해 주세요.'},{status:409})
  return NextResponse.json({ok:true,workflow})
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'개선 과제 처리 실패'},{status:500})}
