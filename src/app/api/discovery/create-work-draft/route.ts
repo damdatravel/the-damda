@@ -19,8 +19,11 @@ export async function POST(req:Request){
   const s=createClient(url,key)
   const {data:p,error}=await s.from('discovery_projects').select('name,website_url,industry,main_services,target_customer,service_area,description').eq('id',projectId).single()
   if(error)return NextResponse.json({error:error.message},{status:500})
+  const previous=await s.from('discovery_improvement_tasks').select('title,status,summary,work_details').eq('project_id',projectId)
+  if(previous.error)return NextResponse.json({error:'기존 작업을 확인하지 못했습니다.'},{status:500})
   const prompt=`너는 담다 디스커버리의 실행 작업 설계자다.
 회사 정보: ${JSON.stringify(p)}
+이미 진행한 작업: ${JSON.stringify(previous.data||[])}
 승인된 개선 과제:
 제목: ${body.title}
 이유: ${body.reason||''}
@@ -28,7 +31,8 @@ export async function POST(req:Request){
 기대 변화: ${body.expected||'확인 필요'}
 재측정 조건: ${body.remeasure||'동일 질문·채널 재측정'}
 
-이 과제를 실제 홈페이지 작업으로 옮기기 전에 대표가 검토할 수 있는 "작업 초안"을 작성하라.
+이 과제를 실행하기 전에 대표가 검토할 수 있는 작업 초안을 작성하라.
+먼저 운영·측정·사실 확인 과제인지 홈페이지 수정·콘텐츠 제작 과제인지 구분하라. 재측정 조건 합의, 질문 검토, 측정 실행, 출처 확인 과제는 내부 운영 절차로 작성하라. 이를 설명하는 신규 홈페이지 페이지 제작으로 바꾸지 마라. 기존 완료 작업은 새로 제작하라고 반복하지 마라. 확인 자료가 부족하면 실행 전 확인 단계로 두고, 없는 결함을 만들어내지 마라. 외부 제작사 작업이 필요하지 않은 과제는 제작사 요청서 항목에 '외부 제작 요청 없음'이라고 명시하라.
 아직 코드를 수정하거나 홈페이지에 게시하지 않는다.
 전문용어는 꼭 필요한 경우에만 쓰고 바로 쉬운 설명을 붙여라.
 회사 정보에 없는 서비스, 실적, 수치, 보장 문구를 만들지 마라.
@@ -37,18 +41,18 @@ export async function POST(req:Request){
 [작업 목적]
 2~3문장
 
-[만들거나 수정할 것]
-- 페이지/영역:
-- 제안 URL:
-- 핵심 내용:
+[작업 유형과 실행 대상]
+- 작업 유형: 운영·측정·확인 또는 홈페이지 수정·콘텐츠 제작
+- 실행 대상: 질문·채널·측정 기록 또는 실제 페이지/영역
+- 필요한 자료:
 
-[페이지 구성 초안]
+[실행 순서]
 1. ...
 2. ...
 3. ...
 
-[실제 문구 초안]
-홈페이지에 들어갈 제목과 핵심 본문을 작성
+[실행 자료 초안]
+운영·측정·확인은 체크리스트와 기록 양식, 홈페이지 수정·콘텐츠 제작은 필요한 문구만 작성
 
 [기술 확인]
 - 실제 적용 전에 확인할 항목만 작성
