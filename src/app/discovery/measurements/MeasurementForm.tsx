@@ -3,7 +3,7 @@ import {useState} from 'react'
 import Link from 'next/link'
 
 type Props={questionId:number;question:string;projectId:number;initialChannel?:string}
-const channelGroups=[{label:'Core AI',values:['ChatGPT']},{label:'Search',values:['Google Search','Naver Search']},{label:'Extended AI',values:['Naver AI Briefing','Google AI','Perplexity','Claude','Copilot']}]
+const channelGroups=[{label:'Core AI',values:['ChatGPT']},{label:'Search',values:['Google Search','Naver Search']},{label:'Extended AI',values:['Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity','Claude','Copilot']}]
 const channels=channelGroups.flatMap(group=>group.values)
 
 export default function MeasurementForm({questionId,question,projectId,initialChannel}:Props){
@@ -35,8 +35,9 @@ export default function MeasurementForm({questionId,question,projectId,initialCh
   <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
    <div className="grid gap-5 md:grid-cols-2">
     <label className="text-sm font-bold">측정 채널<select value={channel} onChange={e=>{setChannel(e.target.value);setDiscovered('');setResult('');setUrls('');setNotes('')}} className="mt-2 w-full rounded-xl border border-gray-200 bg-white p-3 font-normal">{channelGroups.map(group=><optgroup key={group.label} label={group.label}>{group.values.map(x=><option key={x}>{x}</option>)}</optgroup>)}</select></label>
-    <label className="text-sm font-bold">발견 여부<select value={discovered} onChange={e=>setDiscovered(e.target.value)} className="mt-2 w-full rounded-xl border border-gray-200 bg-white p-3 font-normal"><option value="">선택</option><option value="yes">발견됨</option><option value="no">발견되지 않음</option>{channel==='Naver AI Briefing'&&<option value="unknown">AI 답변 미표시 · 판단 보류</option>}</select></label>
+    <label className="text-sm font-bold">발견 여부<select value={discovered} onChange={e=>setDiscovered(e.target.value)} className="mt-2 w-full rounded-xl border border-gray-200 bg-white p-3 font-normal"><option value="">선택</option><option value="yes">발견됨</option><option value="no">발견되지 않음</option>{['Naver AI Briefing','Naver AI Shopping'].includes(channel)&&<option value="unknown">AI 답변 미표시 · 판단 보류</option>}</select></label>
    </div>
+   {channel==='Naver AI Shopping'&&<div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6">네이버 쇼핑 AI 화면의 실제 답변·추천 상품 링크·추천 이유를 기록하세요. 쇼핑 검색 목록이나 광고만 나온 것은 AI 추천으로 집계하지 않습니다. 상품명·판매처·예산·배송지 범위·로그인·대화 맥락을 메모해 같은 조건으로 비교하세요. 개인 주소 전체 등 개인정보는 입력하지 마세요. AI 응답이 없으면 판단 보류입니다. CLOVA Studio 응답은 이 채널의 측정 결과가 아닙니다.</div>}
    {channel==='Naver AI Briefing'&&<div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6">네이버에서 위 질문을 검색하고 AI 브리핑에 나온 답변과 인용 출처를 기록합니다. 일반 웹문서·광고·플레이스에만 업체가 나왔다면 AI 브리핑 발견으로 체크하지 마세요. AI 답변이 표시되지 않으면 ‘판단 보류’를 선택하고 검색 상황을 기록하세요. 공식 자동 측정 연동은 아직 연결되지 않았습니다.</div>}
    <label className="mt-5 block text-sm font-bold">실제 결과 / 답변<textarea value={result} onChange={e=>setResult(e.target.value)} rows={7} placeholder="검색 결과나 AI 답변을 그대로 또는 필요한 범위로 기록" className="mt-2 w-full rounded-xl border border-gray-200 p-3 font-normal"/></label>
    <label className="mt-5 block text-sm font-bold">출처 URL<textarea value={urls} onChange={e=>setUrls(e.target.value)} rows={3} placeholder="관련 URL이 있으면 기록" className="mt-2 w-full rounded-xl border border-gray-200 p-3 font-normal"/></label>
