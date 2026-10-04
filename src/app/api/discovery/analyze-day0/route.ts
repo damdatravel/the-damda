@@ -1,3 +1,4 @@
+import {readWorkflow} from '../../../../lib/improvementWorkflow'
 import {compareMeasurements} from '../../../../lib/measurementComparison'
 import {projectEngagement} from '../../../../lib/engagementStore'
 import {analysisContext} from '../../../../lib/ontology'
@@ -33,7 +34,10 @@ export async function POST(req:Request){
   const comparableCount=comparison.reduce((n,q)=>n+q.measurements.filter(x=>x.comparable).length,0)
   if(comparisonMode&&!comparableCount)return NextResponse.json({error:'같은 Benchmark·채널의 Day 0 이후 측정 기록이 필요합니다.'},{status:400})
   const channels=[...new Set((comparisonMode?comparison:rows).flatMap(row=>row.measurements.map((measurement:any)=>measurement.channel)))]
-  const hasNaver=channels.includes('Naver Web API')||channels.includes('Naver Search')
+  const hasNaver=channels.includes('Naver Web API')||channels.includes('Naver Search')||channels.includes('Naver AI Briefing')
+  const [priorTasks,priorAnalysis]=await Promise.all([s.from('discovery_improvement_tasks').select('title,status,summary,work_details,completed_at').eq('project_id',projectId),s.from('discovery_analysis_history').select('id,observed').eq('project_id',projectId).in('measurement_round',['Comparison','Day 0']).order('id',{ascending:false}).limit(100)])
+  if(priorTasks.error||priorAnalysis.error)throw Error('기존 개선 작업 조회에 실패했습니다. 완료 작업을 확인한 뒤 분석해 주세요.')
+  const nextTasks=(priorAnalysis.data||[]).flatMap(x=>readWorkflow(x.observed||[])?.tasks||[])
   const engagement=await projectEngagement(s,projectId)
   const ontology=await readOntology(s,projectId)
   const dimensions=ontology?await s.from('discovery_question_dimensions').select('id,dimension_type,dimension_value,is_active').eq('project_id',projectId):null
@@ -50,10 +54,13 @@ comparable=false는 재측정 대기 또는 기준 없음이므로 성공·실�
 희망 목표는 사업 사실이나 달성된 결과가 아니다. 목표에 필요한 정보와 측정 결과를 연결하고, 목표 달성 판단은 합의한 기준과 검토로 진행한다.
 관계 근거: ${JSON.stringify(relationships)}
 관계 자료가 있으면 approved의 서비스·대상·지역·조건 연결과 각 evidence의 출처·원문을 인용하여 질문별 필요한 정보를 비교한다. needsReview는 사실이 아니라 확인할 후보이며, 미확인 관계를 서비스 불가나 홈페이지의 확정된 누락으로 단정하지 않는다. 제공된 일부 원문만 확인했으므로 근거를 찾지 못한 것은 '확인 자료에서 미확인'으로 표현한다. 재료 변경으로 제외된 관계(staleCount)는 재검토를 제안한다. 관계 자료가 없으면 관계를 임의로 만들어내지 않는다.
+기존 개선 작업: ${JSON.stringify(priorTasks.data||[])}
+후속 개선 과제와 적용·재측정 검토: ${JSON.stringify(nextTasks)}
+완료된 작업과 진행 중인 과제를 대조하라. 이미 구현한 페이지·안내·기술 설정을 새로 만들라고 반복 제안하지 마라. 같은 항목을 다시 제안할 때는 기존 작업과 무엇이 다르고 어떤 추가 근거로 필요한지 명시하라. 효과가 없다는 관찰만으로 기존 작업이 실패했다고 단정하지 마라. 먼저 질문이 고객 목표에 적합한지, 측정 오류인지, 채널 조건이 다른지 검토하라. 확인 자료가 부족한 것은 확인 과제로 제안하고 홈페이지의 실제 결함이라고 표현하지 마라. 기존 적용 후 변화가 없으면 새로운 원인 가설과 검증 방법을 제안하라. 원본 측정에 없는 날짜·인용·URL을 만들지 마라.
 회사: ${JSON.stringify(p)}
 측정: ${JSON.stringify(rows)}
 목표는 발견 여부와 실제 결과를 근거로 관찰 가능한 부족 정보를 찾고, 채널별로 확인할 일과 공개 홈페이지에서 할 일을 제안하는 것이다.
-채널별 측정 성격: Naver Web API는 웹문서 검색 API 상위 20건으로 네이버 통합검색 화면의 순위나 수집·색인 상태를 증명하지 않는다. Naver Search는 직원이 입력한 통합검색 화면 기록이다. Gemini는 Gemini API와 Google Search grounding, OpenAI Web Search API는 OpenAI Responses API이며 각각 소비자용 Gemini·ChatGPT 화면과 동일하지 않다. Perplexity API와 Claude API도 소비자 화면 기록과 구분한다. notes에 적힌 측정 방식과 한계를 확인하라.
+채널별 측정 성격: Naver Web API는 웹문서 검색 API 상위 20건으로 네이버 통합검색 화면의 순위나 수집·색인 상태를 증명하지 않는다. Naver Search는 직원이 입력한 통합검색 화면 기록이다. Naver AI Briefing은 실제 네이버 AI 브리핑 답변과 인용 출처를 직원이 기록한 별도 채널이다. AI 답변 미표시·판단 보류(null)는 업체 미발견(false)이나 실패로 집계하지 마라. 일반 검색 결과와 AI 답변을 합쳐 발견으로 판단하지 마라. 인용 출처에서 실제 확인된 업체·서비스·지역 정보만 근거로 개선 방향을 제안하고, 출처가 없으면 추정이라고 명시하라. Gemini는 Gemini API와 Google Search grounding, OpenAI Web Search API는 OpenAI Responses API이며 각각 소비자용 Gemini·ChatGPT 화면과 동일하지 않다. Perplexity API와 Claude API도 소비자 화면 기록과 구분한다. notes에 적힌 측정 방식과 한계를 확인하라.
 ${hasNaver?'네이버 측정이 있으므로 네이버 측정의 근거를 다른 채널과 구분해 분석하라. 사이트의 수집·색인 여부는 이 측정만으로 알 수 없으므로 필요한 경우 네이버 서치어드바이저의 소유확인·수집·색인 현황을 "확인할 일"로 제안하라. 사이트맵·robots.txt·고유한 제목과 설명·질문에 실제로 답하는 본문은 확인된 부족 정보가 있을 때만 수정 작업으로 제안하라. 웹문서 API 결과와 수동 통합검색 결과가 다르면 그 차이를 관찰로 기록하라.':'네이버 측정이 없으므로 네이버에서 발견되었거나 미발견되었다고 단정하지 말고, 네이버 전용 개선안을 억지로 만들지 마라.'}
 측정 결과에 없는 사실을 지어내지 마라. 미발견을 곧바로 수집 실패나 콘텐츠 품질 문제로 단정하지 말고, 확인할 일과 확인된 수정 작업을 구분하라. 키워드 반복·순위 보장·대량 문서 생성은 권하지 마라.
 한국어로 다음 형식만 출력하라.
@@ -63,7 +70,7 @@ ${comparisonMode?'[최초·최신 비교]\n- 질문 | 채널 | 최초 날짜·�
 [공통 부족정보]
 - ...
 [우선 개선안]
-1. 제목 | 측정 근거와 필요한 확인 | 확인 또는 홈페이지에서 할 일
+1. 제목 | 측정 근거·확인된 사실 또는 검증할 가설 | 확인 또는 홈페이지에서 할 일 | 기대하는 관찰 가능한 변화 | 재측정 질문·채널·조건
 2. ...
 최대 7개
 [Benchmark별 관찰]

@@ -1,3 +1,4 @@
+import {cookies} from 'next/headers'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 
@@ -5,7 +6,11 @@ export async function POST(req:Request){
  try{
   const apiKey=process.env.OPENAI_API_KEY
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const key=process.env.SUPABASE_SERVICE_ROLE_KEY
+  const pub=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,token=cookies().get('damda_staff_token')?.value
+  if(!url||!pub||!token)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
+  const user=await createClient(url,pub,{auth:{persistSession:false}}).auth.getUser(token)
+  if(user.error||!user.data.user)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
   if(!apiKey||!url||!key)return NextResponse.json({error:'API 환경변수를 확인해 주세요.'},{status:500})
   const body=await req.json()
   const projectId=Number(body?.projectId)
@@ -20,6 +25,8 @@ export async function POST(req:Request){
 제목: ${body.title}
 이유: ${body.reason||''}
 할 일: ${body.action}
+기대 변화: ${body.expected||'확인 필요'}
+재측정 조건: ${body.remeasure||'동일 질문·채널 재측정'}
 
 이 과제를 실제 홈페이지 작업으로 옮기기 전에 대표가 검토할 수 있는 "작업 초안"을 작성하라.
 아직 코드를 수정하거나 홈페이지에 게시하지 않는다.
@@ -46,6 +53,16 @@ export async function POST(req:Request){
 [기술 확인]
 - 실제 적용 전에 확인할 항목만 작성
 - 이미 적용됐는지 확인하지 않은 것은 "확인 필요"라고 표시
+
+[제작사에 전달할 작업 요청서]
+- 대상 페이지·영역과 변경 요청
+- 필요한 자료·관리자 권한·플랫폼 제약: 확인 필요 항목 구분
+- 완료 확인 방법과 적용 증빙 URL
+- 근거가 부족한 경우 수정 전에 확인할 일
+
+[재측정 계획]
+- 승인된 조건을 바탕으로 같은 질문·채널·조건 유지
+- 변화가 없을 때 재검토할 가설
 
 [최종 승인 전 체크]
 - 대표가 확인해야 할 사업적 사실과 표현

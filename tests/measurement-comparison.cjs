@@ -7,3 +7,7 @@ const result=m.exports.compareMeasurements(q,records.reverse()),find=c=>result[0
 assert.equal(find('Gemini').baseline.id,1);assert.equal(find('Gemini').latest.id,3);assert.equal(find('Gemini').change,'신규 발견')
 assert.equal(find('OpenAI').change,'재측정 대기');assert.equal(find('Naver').change,'기준 측정 없음');assert.equal(find('Manual').change,'판단 보류');assert.equal(find('Other').change,'미발견으로 변화');assert.equal(result[1].measurements[0].comparable,false)
 console.log('Passed: earliest baseline, latest measurement, channel/question isolation, missing baseline, missing remeasurement, unknown verdict, lost discovery.')
+const naver=m.exports.compareMeasurements(q,[row(11,'Naver Web API','Day 0',true,'2026-09-01'),row(12,'Naver AI Briefing','Day 0',null,'2026-09-01'),row(13,'Naver AI Briefing','재측정',false,'2026-09-02')])[0].measurements
+assert.equal(naver.find(x=>x.channel==='Naver AI Briefing').change,'판단 보류')
+assert.equal(naver.find(x=>x.channel==='Naver Web API').change,'재측정 대기')
+console.log('Passed: Naver AI unshown answer remains unknown and separate from web API discovery.')
