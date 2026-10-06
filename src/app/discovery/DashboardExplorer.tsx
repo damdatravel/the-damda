@@ -23,7 +23,7 @@ export default function DashboardExplorer({projectId,projectName,measurements,be
    <Stat label="Benchmark 질문" value={benchmarks.length} note="고정 기준 질문 목록 보기" onClick={()=>setShowBenchmarks(true)}/>
    <Stat label="측정 기록" value={measurements.length} note="전체 측정 기록 보기" onClick={()=>openList('전체 측정 기록',measurements)}/>
    <Stat label="발견" value={discovered.length} note="발견된 기록만 보기" onClick={()=>openList('발견 기록',discovered)}/>
-   <Stat label="검토 대기" value={reviewCount} note={reviewCount?`승인·수정·보류할 개선안 ${reviewCount}건`:"현재 대기 작업이 없습니다."}/>
+   <Stat label="누적 검토 후보" value={reviewCount} note={reviewCount?`과거·최신 제안 ${reviewCount}건 · 현재 실행 작업과 구분`:"현재 대기 작업이 없습니다."}/>
   </section>
   <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
    <ActivityCalendar projectName={projectName} measurements={measurements} tasks={tasks}/>
