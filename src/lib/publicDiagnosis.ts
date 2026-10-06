@@ -1,0 +1,5 @@
+export function summarizeDiagnosis(s:any){
+ const pages=s.pages.filter((p:any)=>!p.error)
+ const missing=(key:string)=>pages.filter((p:any)=>!p[key]).length
+ return {summary:`공개 홈페이지 ${pages.length}개 페이지의 기본 안내 정보를 확인했습니다.`,findings:[`페이지 제목 누락 ${missing('title')}개 · 설명 누락 ${missing('description')}개 · 대표 제목 누락 ${missing('h1')}개`,s.sitemapFound?'페이지 목록 파일을 확인했습니다.':'이번 점검에서는 페이지 목록 파일을 찾지 못했습니다.',`질문·답변 관련 표현이 있는 페이지 ${pages.filter((p:any)=>p.hasFaq).length}개`],priorities:[...(missing('title')||missing('description')||missing('h1')?['누락된 제목과 설명을 확인하고 서비스 내용을 명확하게 안내하세요.']:[]),...(!s.sitemapFound?['페이지 목록 파일의 설정과 접근 가능 여부를 확인하세요.']:[]),'핵심 서비스·이용 조건·문의 방법이 고객의 검색 목적과 맞는지 검토하세요.'],notice:'공개 HTML의 초기 점검입니다. JavaScript로 표시되는 내용은 누락될 수 있습니다. 실제 검색 순위·AI 추천 여부는 별도 측정이 필요하며, 노출을 보장하지 않습니다.'}
+}

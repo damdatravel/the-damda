@@ -1,3 +1,4 @@
+import {publicWebsiteFetch} from './publicWebsiteFetch'
 import {detectPlatform} from './websitePlatform'
 import {createHash} from 'node:crypto'
 const MAX_PAGES=8
@@ -10,8 +11,8 @@ function links(html:string,base:URL){
  return [...new Set(out)]
 }
 function structuredTypes(html:string){return [...new Set([...html.matchAll(/"@type"\s*:\s*"([^"]+)"/g)].map(x=>x[1]))]}
-async function getHtml(url:string){const r=await fetch(url,{redirect:'follow',headers:{'User-Agent':'TheDamdaDiscovery/0.2'},signal:AbortSignal.timeout(10000),cache:'no-store'});if(!r.ok)throw new Error(`${r.status} ${r.statusText}`);const type=r.headers.get('content-type')||'';if(!type.includes('text/html'))throw new Error(`HTML 페이지가 아닙니다 (${type||'content-type 없음'})`);return {html:await r.text(),finalUrl:r.url}}
-async function fetchText(url:URL){const r=await fetch(url,{redirect:'follow',headers:{'User-Agent':'TheDamdaDiscovery/0.2'},signal:AbortSignal.timeout(7000),cache:'no-store'});if(!r.ok)return '';return await r.text()}
+async function getHtml(url:string){const r=await publicWebsiteFetch(url);if(!r.contentType.includes('text/html'))throw Error('HTML 페이지가 아닙니다.');return r}
+async function fetchText(url:URL){return (await publicWebsiteFetch(url.toString())).html}
 
 export async function inspectWebsite(target:string,knownUrls?:string[]){
  if(!/^https?:\/\//i.test(target))target='https://'+target

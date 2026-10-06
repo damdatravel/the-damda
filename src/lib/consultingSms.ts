@@ -13,7 +13,7 @@ export function pack(payload:Record<string,unknown>){
  return raw+'.'+sign(raw)
 }
 export function unpack<T>(value?:string):T|null{
- if(!value)return null
+ if(!value||!secret())return null
  const [raw,sig]=value.split('.')
  if(!raw||!sig)return null
  const expected=sign(raw)

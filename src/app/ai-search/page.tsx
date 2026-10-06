@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import PublicDiagnosis from './PublicDiagnosis'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -86,7 +87,7 @@ export default function AiSearchPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/ai-search/consulting"
+                href="#diagnosis"
                 className="bg-[#10E096] text-[#0A0F1E] font-bold px-8 py-4 rounded-xl text-base hover:bg-[#0DC47D] transition-all hover:scale-105"
               >
                 도입 문의하기
@@ -115,6 +116,7 @@ export default function AiSearchPage() {
       </section>
 
       {/* PROBLEM */}
+      <PublicDiagnosis />
       <section className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">
