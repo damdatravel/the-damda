@@ -1,3 +1,4 @@
+import {selectionJourneys} from '../../../../lib/discovery/journeyStore'
 import {projectContext} from '../../../../lib/discovery/contextStore'
 import {executionPrompt} from '../../../../lib/discovery/executionComposition'
 import {originalEvidence} from '../../../../lib/discovery/evidence'
@@ -26,9 +27,9 @@ export async function POST(req:Request){
   if(error)return NextResponse.json({error:error.message},{status:500})
   const sourceId=Number(body.sourceId)
   if(!Number.isSafeInteger(sourceId)||sourceId<1||typeof body.taskId!=='string')return NextResponse.json({error:'원본 분석과 과제를 선택해 주세요.'},{status:400})
-  const source=await s.from('discovery_analysis_history').select('id,observed,created_at,measurement_round').eq('project_id',projectId).eq('id',sourceId).in('measurement_round',['Comparison','Day 0','Naver']).single()
+  const source=await s.from('discovery_analysis_history').select('id,observed,created_at,measurement_round').eq('project_id',projectId).eq('id',sourceId).in('measurement_round',['Comparison','Day 0','Naver','Selection Journey']).single()
   if(source.error)return NextResponse.json({error:'원본 분석을 찾지 못했습니다.'},{status:404})
-  if(source.data.measurement_round==='Naver'?!p.naver_management:!p.ai_management)return NextResponse.json({error:'선택 서비스 범위 밖의 분석입니다.'},{status:409})
+  if((source.data.measurement_round==='Naver'||source.data.measurement_round==='Selection Journey'&&source.data.observed?.[0]?.channel?.startsWith('Naver'))?!p.naver_management:!p.ai_management)return NextResponse.json({error:'선택 서비스 범위 밖의 분석입니다.'},{status:409})
   const task=readWorkflow(source.data.observed||[])?.tasks.find(t=>t.id===body.taskId)
   if(!task||task.status!=='approved')return NextResponse.json({error:'승인된 과제만 초안을 생성할 수 있습니다.'},{status:409})
   const [questions,website,engagement,naver]=await Promise.all([
@@ -43,8 +44,9 @@ export async function POST(req:Request){
   if(previous.error)return NextResponse.json({error:'기존 작업을 확인하지 못했습니다.'},{status:500})
   const assets=await s.from('discovery_analysis_history').select('observed,created_at').eq('project_id',projectId).eq('measurement_round','Channel Inventory').order('id',{ascending:false}).limit(1).maybeSingle()
   if(assets?.error)throw Error('고객 채널 정보 조회 실패')
+  const journeys=await selectionJourneys(s,projectId)
   const inputContext=await projectContext(s,projectId)
-  const prompt=executionPrompt({assets,p,source,questions,evidence,website,naver,engagement,previous,task})
+  const prompt=executionPrompt({assets,p,source,questions,evidence,website,naver,engagement,previous,task,journeys})
   const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:prompt})})
   const raw=await r.json()
   if(!r.ok)return NextResponse.json({error:raw?.error?.message||'OpenAI 작업 초안 오류'},{status:502})

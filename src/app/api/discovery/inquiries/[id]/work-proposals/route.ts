@@ -15,10 +15,10 @@ export async function GET(req:Request,{params}:{params:{id:string}}){
  if(!i.data.project_id)return NextResponse.json({proposals:[]})
  const p=await s.from('discovery_projects').select('ai_management,naver_management').eq('id',i.data.project_id).single()
  if(p.error)throw Error('프로젝트 범위 조회 실패')
- const rounds=[...(p.data.ai_management?['Day 0','Comparison']:[]),...(p.data.naver_management?['Naver']:[])]
+ const rounds=[...(p.data.ai_management||p.data.naver_management?['Selection Journey']:[]),...(p.data.ai_management?['Day 0','Comparison']:[]),...(p.data.naver_management?['Naver']:[])]
  const h=await s.from('discovery_analysis_history').select('id,measurement_round,observed').eq('project_id',i.data.project_id).in('measurement_round',rounds).order('id',{ascending:false}).limit(100)
  if(h.error)throw Error('작업 견적 후보 조회 실패')
- const proposals=(h.data||[]).flatMap(row=>(readWorkflow(row.observed||[])?.tasks||[]).filter(t=>t.status==='approved'&&t.assessment?.status==='ready'&&validAdditionalWork(t.additionalWork)).map(t=>({key:`${row.id}:${t.id}`,sourceId:row.id,taskId:t.id,service:row.measurement_round==='Naver'?'naver':'ai',...t.additionalWork})))
+ const proposals=(h.data||[]).filter(row=>row.measurement_round!=='Selection Journey'||(row.observed?.[0]?.channel?.startsWith('Naver')?p.data.naver_management:p.data.ai_management)).flatMap(row=>(readWorkflow(row.observed||[])?.tasks||[]).filter(t=>t.status==='approved'&&t.assessment?.status==='ready'&&validAdditionalWork(t.additionalWork)).map(t=>({key:`${row.id}:${t.id}`,sourceId:row.id,taskId:t.id,service:(row.measurement_round==='Naver'||row.measurement_round==='Selection Journey'&&row.observed?.[0]?.channel?.startsWith('Naver'))?'naver':'ai',...t.additionalWork})))
  return NextResponse.json({proposals})
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'견적 후보 조회 실패'},{status:500})}
 }

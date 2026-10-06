@@ -1,3 +1,4 @@
+import {selectionJourneys} from '../../../../lib/discovery/journeyStore'
 import {day0ReviewPrompt} from '../../../../lib/discovery/reviewComposition'
 import {projectContext} from '../../../../lib/discovery/contextStore'
 import {readWorkflow} from '../../../../lib/improvementWorkflow'
@@ -52,8 +53,9 @@ comparable=false는 재측정 대기 또는 기준 없음이므로 성공·실�
   if(naver.error)throw Error('계약 범위 내 네이버 근거 조회 실패')
   const assets=await s.from('discovery_analysis_history').select('observed,created_at').eq('project_id',projectId).eq('measurement_round','Channel Inventory').order('id',{ascending:false}).limit(1).maybeSingle()
   if(assets?.error)throw Error('고객 채널 정보 조회 실패')
+  const journeys=await selectionJourneys(s,projectId)
   const inputContext=await projectContext(s,projectId)
-  const prompt=day0ReviewPrompt({assets,comparisonInstructions,comparisonMode,engagement,relationships,priorTasks,nextTasks,naver,p,rows,hasNaver})
+  const prompt=day0ReviewPrompt({assets,comparisonInstructions,comparisonMode,engagement,relationships,priorTasks,nextTasks,naver,p,rows,hasNaver,journeys})
   const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:prompt})})
   const raw=await r.json();if(!r.ok)return NextResponse.json({error:raw?.error?.message||'OpenAI 분석 오류'},{status:502})
   const text=(raw.output??[]).filter((x:any)=>x.type==='message').flatMap((x:any)=>x.content??[]).filter((x:any)=>x.type==='output_text').map((x:any)=>x.text||'').join('\n').trim()

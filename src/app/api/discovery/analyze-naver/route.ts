@@ -1,3 +1,4 @@
+import {selectionJourneys} from '../../../../lib/discovery/journeyStore'
 import {projectEngagement} from '../../../../lib/engagementStore'
 import {naverReviewPrompt} from '../../../../lib/discovery/reviewComposition'
 import {projectContext} from '../../../../lib/discovery/contextStore'
@@ -40,8 +41,9 @@ export async function POST(request:Request){
   const assets=isInquiry?null:await s.from('discovery_analysis_history').select('observed,created_at').eq('project_id',projectId).eq('measurement_round','Channel Inventory').order('id',{ascending:false}).limit(1).maybeSingle()
   if(assets?.error)throw Error('고객 채널 정보 조회 실패')
   const engagement=isProject?await projectEngagement(s,projectId):null
+  const journeys=isProject?await selectionJourneys(s,projectId):[]
   const inputContext=isProject?await projectContext(s,projectId):null
-  const prompt=naverReviewPrompt({assets,project,evidence,websiteCheckedAt,websiteEvidence,prior,engagement})
+  const prompt=naverReviewPrompt({assets,project,evidence,websiteCheckedAt,websiteEvidence,prior,engagement,journeys})
   const scopedPrompt=isInquiry?prompt+'\n이번 분석은 계약 전 초기 상담입니다. 주요 관찰과 가능한 문제, 개선 방향을 최대 3개로 요약하고 상세 실행 절차·콘텐츠 제작·반복 관리·일괄 측정 계획은 제공하지 마세요. 계약 이후 협의할 관리 범위를 짧게 구분하세요.':prompt
   const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:scopedPrompt})})
   const raw=await response.json();if(!response.ok)return NextResponse.json({error:raw?.error?.message||'분석 API 오류'},{status:502})

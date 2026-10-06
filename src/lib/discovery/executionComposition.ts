@@ -1,7 +1,8 @@
 // This module composes an execution request only; it cannot fetch, store or publish.
-export function executionPrompt(context:{assets:any;p:any;source:any;questions:any;evidence:any[];website:any;naver:any;engagement:any;previous:any;task:any}):string{
- const {assets,p,source,questions,evidence,website,naver,engagement,previous,task}=context
- return `등록된 고객 채널·소유 확인 상태: ${JSON.stringify(assets?.data||null)}. confirmed는 직원이 확인한 관계이며 플랫폼 인증을 뜻하지 않는다. unconfirmed는 후보이며 공식 계정으로 단정하지 않는다. 기존 등록 채널과 콘텐츠를 먼저 검토하고 새 채널을 불필요하게 만들지 마라. URL 등록만으로 그 페이지 본문·품질·검색 노출을 확인한 것으로 간주하지 마라.
+export function executionPrompt(context:{assets:any;p:any;source:any;questions:any;evidence:any[];website:any;naver:any;engagement:any;previous:any;task:any;journeys?:any[]}):string{
+ const {assets,p,source,questions,evidence,website,naver,engagement,previous,task,journeys}=context
+ return `실제 대화·선택 단계 검토: ${JSON.stringify(journeys||[])}. 판정별 원본 근거와 불확실성을 유지하고 추천 후보·정확성·공식 신청/구매 경로의 부족한 정보를 관련 작업에만 연결한다. 기록이 없으면 구매 과정이나 추천 결과를 만들지 않는다.
+등록된 고객 채널·소유 확인 상태: ${JSON.stringify(assets?.data||null)}. confirmed는 직원이 확인한 관계이며 플랫폼 인증을 뜻하지 않는다. unconfirmed는 후보이며 공식 계정으로 단정하지 않는다. 기존 등록 채널과 콘텐츠를 먼저 검토하고 새 채널을 불필요하게 만들지 마라. URL 등록만으로 그 페이지 본문·품질·검색 노출을 확인한 것으로 간주하지 마라.
 너는 담다 디스커버리의 실행 작업 설계자다.
 회사 정보: ${JSON.stringify(p)}
 원본 분석 ID·일시: ${source.data.id} · ${source.data.created_at}
