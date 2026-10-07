@@ -1,4 +1,6 @@
 'use client'
+import {workQueue} from '../../lib/discovery/workQueue'
+import {staffFetch} from '../../lib/staffFetch'
 import {measurementCycle} from '../../lib/discovery/measurementCycle'
 import {useEffect,useState} from 'react'
 import ActivityCalendar,{type CalendarMeasurement} from './ActivityCalendar'
@@ -15,7 +17,22 @@ export default function DashboardExplorer({projectId,projectName,measurements,be
  const[list,setList]=useState<{title:string;items:CalendarMeasurement[]}|null>(null)
  const[showBenchmarks,setShowBenchmarks]=useState(false)
  const[reviewCount,setReviewCount]=useState(0)
- useEffect(()=>{const sync=async()=>{let old=0;try{const a=JSON.parse(localStorage.getItem('discovery_review_items_v01_'+projectId)||'[]');old=a.filter((x:any)=>x.status==='pending').length}catch{};try{const r=await fetch('/api/discovery/improvement-workflow?projectId='+projectId,{cache:'no-store'}),j=await r.json();setReviewCount(old+(j.batches||[]).flatMap((x:any)=>x.tasks).filter((x:any)=>x.status==='pending').length)}catch{setReviewCount(old)}};sync();window.addEventListener('discovery-review-change',sync);window.addEventListener('improvement-workflow-change',sync);return()=>{window.removeEventListener('discovery-review-change',sync);window.removeEventListener('improvement-workflow-change',sync)}},[projectId])
+ useEffect(()=>{
+  let disposed=false
+  const sync=async()=>{
+   let legacy:any[]=[]
+   try{const a=JSON.parse(localStorage.getItem('discovery_review_items_v01_'+projectId)||'[]');if(Array.isArray(a))legacy=a}catch{}
+   try{
+    const r=await staffFetch('/api/discovery/improvement-workflow?projectId='+projectId,{cache:'no-store'}),j=await r.json()
+    if(!r.ok)throw Error(j.error||'조회 실패')
+    // Count with the same queue rule as the work list, including legacy browser candidates.
+    const batches=[...(j.batches||[]),{sourceId:0,sourceRound:'Day 0',createdAt:'',tasks:legacy}]
+    if(!disposed)setReviewCount(workQueue(batches).counts.pending)
+   }catch{if(!disposed)setReviewCount(workQueue([{sourceId:0,createdAt:'',tasks:legacy}]).counts.pending)}
+  }
+  sync();window.addEventListener('discovery-review-change',sync);window.addEventListener('improvement-workflow-change',sync)
+  return()=>{disposed=true;window.removeEventListener('discovery-review-change',sync);window.removeEventListener('improvement-workflow-change',sync)}
+ },[projectId])
  const discovered=measurements.filter(m=>m.is_discovered)
  const channels=channelGroups.map(group=>({...group,channels:group.names.map(name=>{const items=measurements.filter(m=>m.channel===name);return{name,items,found:items.filter(m=>m.is_discovered===true).length,judged:items.filter(m=>m.is_discovered!==null).length,pending:items.filter(m=>m.is_discovered===null).length}})}))
  const openList=(title:string,items:CalendarMeasurement[])=>setList({title,items})
@@ -24,7 +41,7 @@ export default function DashboardExplorer({projectId,projectName,measurements,be
    <Stat label="Benchmark 질문" value={benchmarks.length} note="고정 기준 질문 목록 보기" onClick={()=>setShowBenchmarks(true)}/>
    <Stat label="측정 기록" value={measurements.length} note="전체 측정 기록 보기" onClick={()=>openList('전체 측정 기록',measurements)}/>
    <Stat label="발견" value={discovered.length} note="발견된 기록만 보기" onClick={()=>openList('발견 기록',discovered)}/>
-   <Stat label="누적 검토 후보" value={reviewCount} note={reviewCount?`과거·최신 제안 ${reviewCount}건 · 현재 실행 작업과 구분`:"현재 대기 작업이 없습니다."}/>
+   <Stat label="누적 검토 후보" value={reviewCount} note={reviewCount?`중복을 제외한 검토 후보 ${reviewCount}건 · 현재 실행 작업과 구분`:"현재 대기 작업이 없습니다."}/>
   </section>
   <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
    <ActivityCalendar projectId={projectId} projectName={projectName} measurements={measurements} tasks={tasks}/>
