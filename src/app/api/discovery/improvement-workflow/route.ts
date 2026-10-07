@@ -1,3 +1,4 @@
+import {sameTask} from '../../../../lib/discovery/taskDuplicates'
 import {journeyProposals,comparableJourney} from '../../../../lib/discovery/journeyImprovement'
 import {selectionJourneys} from '../../../../lib/discovery/journeyStore'
 import {journeySummary} from '../../../../lib/discovery/selectionJourney'
@@ -44,6 +45,22 @@ export async function POST(req:Request){
  if(b.action!=='init'&&(!previous||b.revision!==previous.revision))return NextResponse.json({error:'다른 작업에서 변경되었습니다. 새로고침 후 확인해 주세요.'},{status:409})
  let tasks=previous?.tasks||(r.data.measurement_round==='Selection Journey'?journeyProposals(observed[0],sourceId):proposals(r.data.interpreted,sourceId))
  if(b.action==='init'&&!previous&&r.data.measurement_round==='Selection Journey'){const prior=await s.from('discovery_analysis_history').select('id,observed').eq('project_id',projectId).in('measurement_round',['Selection Journey']).order('id',{ascending:false}).limit(100);if(prior.error)throw Error('중복 과제 조회 실패');const existing=(prior.data||[]).flatMap(x=>readWorkflow(x.observed||[])?.tasks||[]);const duplicates=tasks.filter(t=>existing.some(e=>e.selectionKey===t.selectionKey));tasks=tasks.filter(t=>!duplicates.includes(t));if(!tasks.length)return NextResponse.json({ok:true,duplicate:true,message:'같은 대상·대화 조건의 개선 과제가 이미 있습니다. 기존 과제를 검토해 주세요.'})}
+ if(b.action==='init'&&!previous&&r.data.measurement_round!=='Selection Journey'){
+  const rounds=r.data.measurement_round==='Naver'?['Naver']:['Day 0','Comparison']
+  const prior=await s.from('discovery_analysis_history').select('id,observed').eq('project_id',projectId).in('measurement_round',rounds).neq('id',sourceId).order('id',{ascending:false}).limit(100)
+  if(prior.error)throw Error('기존 개선 과제 중복 확인 실패')
+  const existing=(prior.data||[]).flatMap(x=>readWorkflow(x.observed||[])?.tasks||[])
+  const unique:NextTask[]=[]
+  for(const task of tasks)if(![...existing,...unique].some(x=>sameTask(task,x)))unique.push(task)
+  const duplicateCount=tasks.length-unique.length;tasks=unique
+  if(!tasks.length&&duplicateCount){
+   // Store an empty connection envelope too, so repeated clicks stay idempotent.
+   const linked=attachWorkflow(observed,{kind:'improvement-workflow',workflow:{revision:1,tasks:[]},audit:[{at:new Date().toISOString(),action:'init',duplicateCount}]})
+   const saved=await s.from('discovery_analysis_history').update({observed:linked}).eq('project_id',projectId).eq('id',sourceId).is(`observed->${observed.length}`,'null').select('id').maybeSingle()
+   if(saved.error||!saved.data)throw Error('동시 변경 또는 연결 저장 오류입니다. 새로고침 후 확인해 주세요.')
+   return NextResponse.json({ok:true,duplicate:true,workflow:{revision:1,tasks:[]},message:'같은 개선 과제가 이미 있어 중복 후보를 추가하지 않았습니다.'})
+  }
+ }
  if(!tasks.length&&r.data.measurement_round==='Selection Journey')return NextResponse.json({ok:true,message:'추가 확인이 필요한 판정이 없습니다. 대화 기록을 유지하고 다음 측정에서 비교하세요.'})
  if(!tasks.length)return NextResponse.json({error:'연결할 개선안이 없습니다. 분석 원문을 확인해 주세요.'},{status:400})
  if(b.action==='report'){

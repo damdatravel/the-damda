@@ -1,3 +1,4 @@
+import {readWorkflow} from '../../../../lib/improvementWorkflow'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
@@ -18,7 +19,7 @@ export async function GET(req:Request){
  if(round==='Naver')query=query.in('measurement_round',['Naver','Naver Approved'])
  else query=query.in('measurement_round',['Day 0','Comparison'])
  const {data,error}=await query.order('created_at',{ascending:false}).limit(20)
- return error?NextResponse.json({error:error.message},{status:500}):NextResponse.json({history:data??[]})
+ return error?NextResponse.json({error:error.message},{status:500}):NextResponse.json({history:(data??[]).map(row=>({...row,workflowLinked:!!readWorkflow(row.observed||[])}))})
 }
 export async function POST(req:Request){
  const s=await client();if(!s)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
