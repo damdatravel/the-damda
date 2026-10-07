@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import PublicDiagnosis from './PublicDiagnosis'
+import RecentReceipts from './RecentReceipts'
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: '담다 디스커버리 | 검색·AI 발견 상태 진단·개선',
@@ -117,6 +120,7 @@ export default function AiSearchPage() {
 
       {/* PROBLEM */}
       <PublicDiagnosis />
+      <RecentReceipts />
       <section className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">

@@ -36,12 +36,12 @@ export async function POST(req:Request){
   if((count.count||0)>=3)return NextResponse.json({error:'하루에 최대 3회까지 진단할 수 있습니다.'},{status:429})
   const snapshot=await inspectWebsite(String(b.url||''))
   if(!snapshot.pageCount)return NextResponse.json({error:'확인 가능한 공개 페이지가 없습니다.'},{status:422})
-  const saved=await s.from('discovery_public_diagnoses').insert({phone,website_url:snapshot.website,snapshot}).select('id').single()
+  const saved=await s.from('discovery_public_diagnoses').insert({phone,website_url:snapshot.website,snapshot,retained_until:new Date(Date.now()+(b.retentionConsentVersion===2?90:1)*86400000).toISOString()}).select('id').single()
   if(saved.error)throw Error('DATABASE')
   const out=NextResponse.json({ok:true,result:summarizeDiagnosis(snapshot),website:snapshot.website,id:saved.data.id})
   out.cookies.set(CHECK,pack({id:saved.data.id,phone,exp:Date.now()+86400000}),{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/',maxAge:86400})
-  // Opportunistic retention cleanup; no user-facing diagnosis content is retained beyond its TTL.
-  await s.from('discovery_public_diagnoses').delete().lt('expires_at',new Date().toISOString())
+  // Delete records only after the consented retention period.
+  await s.from('discovery_public_diagnoses').delete().lt('retained_until',new Date().toISOString())
   return out
  }catch{return NextResponse.json({error:'사전 진단을 완료하지 못했습니다. 주소를 확인하거나 상담 접수를 이용해 주세요.'},{status:500})}
 }
