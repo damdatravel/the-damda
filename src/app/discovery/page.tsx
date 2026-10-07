@@ -39,7 +39,7 @@ export default async function CompanyDashboard(){
  const today=dayKey(new Date().toISOString())
  const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const schedule=cycleSchedule(measurements.filter(m=>m.project_id===p.id).map(m=>m.created_at));const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})
  const due=rows.filter(r=>r.next).sort((a,b)=>a.next!.date.localeCompare(b.next!.date))
- return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-7xl px-5 pb-10 pt-16 md:px-8 md:pt-20">
+ return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-6xl px-6 pb-10 pt-10">
   <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Damda Discovery</p><h1 className="text-3xl font-extrabold md:text-4xl">회사 대시보드</h1><p className="mt-2 text-sm text-gray-500">신규 상담부터 사전 진단, 기존 프로젝트 운영까지 한 곳에서 관리합니다.</p></div></header>
   {error&&<div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">DB 연결 확인 필요: {error}</div>}
   <section className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4"><Stat label="관리 프로젝트" value={rows.length}/><Stat label="재측정 예정" value={due.length}/><Stat label="완료 개선 작업" value={tasks.filter(t=>t.status==='effect_confirmed').length}/><Stat label="오늘 재측정" value={due.filter(r=>r.next?.date===today).length}/></section>
