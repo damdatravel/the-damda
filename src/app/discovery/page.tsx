@@ -1,3 +1,4 @@
+import {cycleSchedule} from '../../lib/discovery/measurementCycle'
 import {requireStaff} from '../../lib/requireStaff'
 import Link from 'next/link'
 import {createClient} from '@supabase/supabase-js'
@@ -12,14 +13,15 @@ function dayKey(iso:string){return new Intl.DateTimeFormat('en-CA',{timeZone:'As
 function addDays(iso:string,days:number){const d=new Date(iso);d.setDate(d.getDate()+days);return dayKey(d.toISOString())}
 async function getData(){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
- if(!url||!key)return{projects:[] as Project[],tasks:[] as Task[],inquiries:[] as Inquiry[],error:'Supabase 환경변수를 확인해 주세요.'}
+ if(!url||!key)return{measurements:[] as {project_id:number;created_at:string}[],projects:[] as Project[],tasks:[] as Task[],inquiries:[] as Inquiry[],error:'Supabase 환경변수를 확인해 주세요.'}
  const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
- const[p,t,i]=await Promise.all([
+ const[p,t,i,m]=await Promise.all([
   s.from('discovery_projects').select('id,name,website_url,status').order('id'),
   s.from('discovery_improvement_tasks').select('project_id,status,completed_at'),
-  s.from('discovery_inquiries').select('id,company_name,website_url,industry,status,created_at').not('status','in','(contracted,converted,closed)').order('created_at',{ascending:false})
+  s.from('discovery_inquiries').select('id,company_name,website_url,industry,status,created_at').not('status','in','(contracted,converted,closed)').order('created_at',{ascending:false}),
+  s.from('discovery_measurements').select('project_id,created_at')
  ])
- return{projects:(p.data??[]) as Project[],tasks:(t.data??[]) as Task[],inquiries:(i.data??[]) as Inquiry[],error:p.error?.message??t.error?.message??i.error?.message??null}
+ return{measurements:m.data||[],projects:(p.data??[]) as Project[],tasks:(t.data??[]) as Task[],inquiries:(i.data??[]) as Inquiry[],error:p.error?.message??t.error?.message??i.error?.message??m.error?.message??null}
 }
 async function getQuotations(){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -33,9 +35,9 @@ async function getQuotations(){
 }
 export default async function CompanyDashboard(){
  await requireStaff()
- const [{projects,tasks,inquiries,error},quotations]=await Promise.all([getData(),getQuotations()])
+ const [{projects,tasks,inquiries,error,measurements},quotations]=await Promise.all([getData(),getQuotations()])
  const today=dayKey(new Date().toISOString())
- const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const base=done[0]?.completed_at;const schedule=base?[7,15,30,45,60,75,90].map(day=>({day,date:addDays(base,day)})):[];const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})
+ const rows=projects.map(p=>{const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime());const schedule=cycleSchedule(measurements.filter(m=>m.project_id===p.id).map(m=>m.created_at));const next=schedule.find(x=>x.date>=today)??null;return{...p,completed:done.length,next}})
  const due=rows.filter(r=>r.next).sort((a,b)=>a.next!.date.localeCompare(b.next!.date))
  return <div className="min-h-screen bg-[#F4F7F6] text-[#0A0F1E]"><div className="mx-auto max-w-7xl px-5 pb-10 pt-16 md:px-8 md:pt-20">
   <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"><div><p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#0A9B6C]">Damda Discovery</p><h1 className="text-3xl font-extrabold md:text-4xl">회사 대시보드</h1><p className="mt-2 text-sm text-gray-500">신규 상담부터 사전 진단, 기존 프로젝트 운영까지 한 곳에서 관리합니다.</p></div></header>

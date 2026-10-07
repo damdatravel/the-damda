@@ -1,9 +1,9 @@
+import {measurementGate} from '../../../../lib/discovery/measurementGate'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
 
 const channel='Naver Web API'
-const seoulDay=(date:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date))
 const clean=(value:unknown)=>String(value||'').replace(/<[^>]*>/g,'').replace(/&(?:amp|lt|gt|quot|apos);/g,entity=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'"}[entity]||entity))
 
 export async function POST(req:Request){
@@ -25,7 +25,9 @@ export async function POST(req:Request){
   if(qe||!q)return NextResponse.json({error:qe?.message||'Benchmark 질문을 찾지 못했습니다.'},{status:404})
   const {data:existing,error:ee}=await s.from('discovery_measurements').select('id,is_discovered,result_text,source_urls,created_at').eq('project_id',projectId).eq('question_id',q.id).eq('channel',channel).order('created_at',{ascending:false}).limit(1).maybeSingle()
   if(ee)return NextResponse.json({error:'기존 측정 확인 실패: '+ee.message},{status:500})
-  if(existing&&seoulDay(existing.created_at)===seoulDay(new Date().toISOString()))return NextResponse.json({ok:true,verified:true,reused:true,measurementId:existing.id,discovered:existing.is_discovered,answer:existing.result_text,sourceUrls:existing.source_urls??[]})
+  const gate=await measurementGate(s,projectId,existing)
+  if(gate.reuse&&existing)return NextResponse.json({ok:true,verified:true,reused:true,measurementId:existing.id,discovered:existing.is_discovered,answer:existing.result_text,sourceUrls:existing.source_urls??[]})
+  if(gate.blocked)return NextResponse.json({error:gate.message,nextMeasurementDate:gate.cycle.next},{status:409})
   const {data:project,error:pe}=await s.from('discovery_projects').select('name,website_url').eq('id',projectId).single()
   if(pe||!project)return NextResponse.json({error:pe?.message||'프로젝트를 찾지 못했습니다.'},{status:404})
   const searchUrl=new URL('https://naverapihub.apigw.ntruss.com/search/v1/webkr')

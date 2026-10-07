@@ -1,3 +1,4 @@
+import {measurementCycle,cycleMeasurements} from '../../../../lib/discovery/measurementCycle'
 import {selectionJourneys} from '../../../../lib/discovery/journeyStore'
 import {day0ReviewPrompt} from '../../../../lib/discovery/reviewComposition'
 import {projectContext} from '../../../../lib/discovery/contextStore'
@@ -31,9 +32,10 @@ export async function POST(req:Request){
   if(me)return NextResponse.json({error:me.message},{status:500})
   if(p&&!p.ai_management)return NextResponse.json({error:'AI 관리 서비스가 선택된 프로젝트에서 분석해 주세요.'},{status:409})
   if(!p)return NextResponse.json({error:'프로젝트를 찾지 못했습니다.'},{status:404})
-  const latest=new Map<string,any>();for(const x of (m??[]).filter(x=>x.measurement_round==='Day 0')){const key=`${x.question_id}:${x.channel}`;if(!latest.has(key))latest.set(key,x)}
+  const cycle=measurementCycle((m??[]).map(x=>x.created_at))
+  const latest=cycleMeasurements(m??[],cycle)
   const rows=(b??[]).map(q=>({question_id:q.id,question:q.question,measurements:[...latest.entries()].filter(([key])=>key.startsWith(`${q.id}:`)).map(([,value])=>value)}))
-  if(!rows.length||!rows.some(x=>x.measurements.length))return NextResponse.json({error:'Benchmark의 Day 0 측정 기록이 필요합니다.'},{status:400})
+  if(!rows.length||!rows.some(x=>x.measurements.length))return NextResponse.json({error:'이번 정기 회차의 Benchmark 측정 기록이 필요합니다. 다음 정기 측정일에 측정해 주세요.'},{status:400})
   const comparison=compareMeasurements(b??[],m??[])
   const comparableCount=comparison.reduce((n,q)=>n+q.measurements.filter(x=>x.comparable).length,0)
   if(comparisonMode&&!comparableCount)return NextResponse.json({error:'같은 Benchmark·채널의 Day 0 이후 측정 기록이 필요합니다.'},{status:400})
@@ -55,11 +57,13 @@ comparable=false는 재측정 대기 또는 기준 없음이므로 성공·실�
   if(assets?.error)throw Error('고객 채널 정보 조회 실패')
   const journeys=await selectionJourneys(s,projectId)
   const inputContext=await projectContext(s,projectId)
-  const prompt=day0ReviewPrompt({assets,comparisonInstructions,comparisonMode,engagement,relationships,priorTasks,nextTasks,naver,p,rows,hasNaver,journeys})
+  const coverage=(b??[]).map(q=>({questionId:q.id,missingChannels:[...new Set((m??[]).filter(x=>x.question_id===q.id).map(x=>x.channel))].filter(channel=>!latest.has(`${q.id}:${channel}`))}))
+  const cycleContext={kind:'measurement-cycle',...cycle,coverage}
+  const prompt=`이번 분석은 프로젝트 ${cycle.round}차 정기 측정 종합 분석이다. 기준일 ${cycle.base}, 회차 시작일 ${cycle.start}. 최신 회차에 없는 채널은 미측정으로 표시하고 미발견으로 간주하지 마라. 측정 시각이 다르면 명시하라. 이전 회차 기록은 비교용으로만 사용하라. 채널별 공통 관찰과 차이를 근거로 통합 개선안을 제안하라. 회차별 미측정 채널: ${JSON.stringify(coverage)}\n`+day0ReviewPrompt({assets,comparisonInstructions,comparisonMode,engagement,relationships,priorTasks,nextTasks,naver,p,rows,hasNaver,journeys})
   const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:'gpt-5.5',input:prompt})})
   const raw=await r.json();if(!r.ok)return NextResponse.json({error:raw?.error?.message||'OpenAI 분석 오류'},{status:502})
   const text=(raw.output??[]).filter((x:any)=>x.type==='message').flatMap((x:any)=>x.content??[]).filter((x:any)=>x.type==='output_text').map((x:any)=>x.text||'').join('\n').trim()
   if(!text)return NextResponse.json({error:'분석 결과를 찾지 못했습니다.'},{status:502})
-  return NextResponse.json({ok:true,analysis:text,measurementRound:comparisonMode?'Comparison':'Day 0',observed:[...(comparisonMode?comparison:rows),inputContext],comparableCount,benchmarkCount:(b??[]).length,measurementCount:rows.reduce((count,x)=>count+x.measurements.length,0)})
+  return NextResponse.json({ok:true,analysis:text,measurementRound:comparisonMode?'Comparison':'Day 0',observed:[...(comparisonMode?comparison:rows),cycleContext,inputContext],comparableCount,benchmarkCount:(b??[]).length,measurementCount:rows.reduce((count,x)=>count+x.measurements.length,0)})
  }catch(e:any){return NextResponse.json({error:e?.message||'분석 중 오류가 발생했습니다.'},{status:500})}
 }

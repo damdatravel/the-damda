@@ -1,3 +1,4 @@
+import {cycleSchedule} from '../../../lib/discovery/measurementCycle'
 import {projectLogoUrl} from '../../../lib/projectLogo'
 import ProjectIcon from '../ProjectIcon'
 import Link from 'next/link'
@@ -14,7 +15,7 @@ function addDays(iso:string,days:number){const d=new Date(iso);d.setDate(d.getDa
 export default async function AiManagement(){
  await requireStaff()
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY
- let projects:Project[]=[],tasks:Task[]=[],questions:{project_id:number}[]=[],measurements:{project_id:number}[]=[]
+ let projects:Project[]=[],tasks:Task[]=[],questions:{project_id:number}[]=[],measurements:{project_id:number;created_at:string}[]=[]
  let error:string|null=null
  if(url&&key){
   const s=createClient(url,key,{global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}})
@@ -22,7 +23,7 @@ export default async function AiManagement(){
    s.from('discovery_projects').select('id,name,website_url').eq('ai_management',true).order('id'),
    s.from('discovery_improvement_tasks').select('project_id,status,completed_at'),
    s.from('discovery_questions').select('project_id').eq('is_benchmark',true),
-   s.from('discovery_measurements').select('project_id').eq('measurement_round','Day 0')
+   s.from('discovery_measurements').select('project_id,created_at')
   ])
   projects=p.data||[];tasks=t.data||[];questions=q.data||[];measurements=m.data||[]
   error=p.error?.message??t.error?.message??q.error?.message??m.error?.message??null
@@ -30,7 +31,7 @@ export default async function AiManagement(){
  const today=dayKey(new Date().toISOString())
  const rows=projects.map(p=>{
   const done=tasks.filter(t=>t.project_id===p.id&&t.status==='effect_confirmed'&&t.completed_at).sort((a,b)=>new Date(b.completed_at!).getTime()-new Date(a.completed_at!).getTime())
-  const schedule=done[0]?.completed_at?[7,15,30,45,60,75,90].map(day=>({day,date:addDays(done[0].completed_at!,day)})):[]
+  const schedule=cycleSchedule(measurements.filter(m=>m.project_id===p.id).map(m=>m.created_at))
   return {...p,completed:done.length,next:schedule.find(x=>x.date>=today)??null}
  })
  const workflow=rows.flatMap(r=>{
@@ -41,8 +42,8 @@ export default async function AiManagement(){
   if(r.next)add(`Day ${r.next.day} 재측정`,r.next.date)
   if(!items.length){
    if(!questions.some(q=>q.project_id===r.id))add('질문·Benchmark 준비','질문 엔진에서 측정 질문을 지정하세요')
-   else if(!measurements.some(m=>m.project_id===r.id))add('Day 0 측정','Benchmark 질문의 기초 상태를 측정하세요')
-   else if(!projectTasks.length)add('측정 결과 분석','Day 0 분석과 개선안을 검토하세요')
+   else if(!measurements.some(m=>m.project_id===r.id))add('최초 정기 측정','Benchmark 질문의 기초 상태를 측정하세요')
+   else if(!projectTasks.length)add('측정 결과 분석','최신 회차 종합 분석과 개선안을 검토하세요')
    else add('후속 측정 확인','개선 결과와 다음 측정 계획을 확인하세요')
   }
   return items

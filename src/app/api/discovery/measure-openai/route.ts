@@ -1,7 +1,7 @@
+import {measurementGate} from '../../../../lib/discovery/measurementGate'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
-const seoulDay=(date:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date))
 
 export async function POST(req:Request){
  try{
@@ -23,13 +23,15 @@ export async function POST(req:Request){
   const {data:q,error:qe}=await s.from('discovery_questions').select('id,question,is_benchmark').eq('project_id',projectId).eq('id',Number(questionId)).eq('is_benchmark',true).maybeSingle()
   if(qe||!q)return NextResponse.json({error:qe?.message||'Benchmark 질문을 찾지 못했습니다.'},{status:404})
 
-  // 같은 한국 날짜의 측정만 재사용하고, 이후 날짜에는 새 기록을 만든다.
+  // 정기 회차에서 이미 저장된 질문·채널은 재사용한다.
   const {data:existing,error:ee}=await s.from('discovery_measurements')
    .select('id,is_discovered,result_text,source_urls,created_at')
    .eq('project_id',projectId).eq('question_id',q.id).eq('channel','OpenAI Web Search API')
    .order('created_at',{ascending:false}).limit(1).maybeSingle()
   if(ee)return NextResponse.json({error:'기존 측정 확인 실패: '+ee.message},{status:500})
-  if(existing&&seoulDay(existing.created_at)===seoulDay(new Date().toISOString()))return NextResponse.json({ok:true,verified:true,reused:true,measurementId:existing.id,discovered:existing.is_discovered,answer:existing.result_text,sourceUrls:existing.source_urls??[]})
+  const gate=await measurementGate(s,projectId,existing)
+  if(gate.reuse&&existing)return NextResponse.json({ok:true,verified:true,reused:true,measurementId:existing.id,discovered:existing.is_discovered,answer:existing.result_text,sourceUrls:existing.source_urls??[]})
+  if(gate.blocked)return NextResponse.json({error:gate.message,nextMeasurementDate:gate.cycle.next},{status:409})
 
   const {data:project}=await s.from('discovery_projects').select('name,website_url').eq('id',projectId).single()
   const resp=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${openaiKey}`},body:JSON.stringify({model:'gpt-5.5',tools:[{type:'web_search'}],tool_choice:'auto',include:['web_search_call.action.sources'],input:`다음 질문에 현재 웹 정보를 검색해서 자연스럽게 답변해 주세요. 특정 업체를 억지로 포함하지 말고, 실제 검색 결과에 근거해 답하세요. 질문: ${q.question}`})})
