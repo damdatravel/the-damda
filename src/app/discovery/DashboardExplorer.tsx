@@ -6,7 +6,7 @@ type Benchmark={id:number;question:string}
 type WorkTask={id:number;priority:number;title:string;status:string;summary:string|null;work_details:string[];completed_at:string|null;created_at:string}
 type Props={projectId:number;projectName:string;measurements:CalendarMeasurement[];benchmarks:Benchmark[];tasks:WorkTask[]}
 function shortChannel(c:string){return c==='Naver AI Shopping'?'네이버 쇼핑 AI':c==='Naver AI Briefing'?'네이버 AI 브리핑':c==='Google Search'?'Google':c==='Naver Search'?'Naver 화면':c==='Naver Web API'?'Naver 웹 API':c==='Google AI'?'Google AI':c==='OpenAI Web Search API'?'OpenAI Web':c}
-const channelGroups=[{label:'Core AI',names:['OpenAI Web Search API','ChatGPT','Gemini']},{label:'Search',names:['Google Search','Naver Web API','Naver Search']},{label:'Extended AI',names:['Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity API','Perplexity','Claude API','Claude','Copilot']}]
+const channelGroups=[{label:'Core AI',names:['OpenAI Web Search API','ChatGPT','Gemini']},{label:'Search',names:['Google Search','Naver Web API','Naver Search']},{label:'Extended AI',names:['Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity API','Perplexity','Claude API','Claude','Meta Model API','Meta AI','Copilot']}]
 function when(iso:string){return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}
 
 export default function DashboardExplorer({projectId,projectName,measurements,benchmarks,tasks}:Props){

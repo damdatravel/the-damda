@@ -3,7 +3,7 @@ import {useState} from 'react'
 import Link from 'next/link'
 
 type Props={questionId:number;question:string;projectId:number;initialChannel?:string}
-const channelGroups=[{label:'Core AI',values:['ChatGPT']},{label:'Search',values:['Google Search','Naver Search']},{label:'Extended AI',values:['Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity','Claude','Copilot']}]
+const channelGroups=[{label:'Core AI',values:['ChatGPT']},{label:'Search',values:['Google Search','Naver Search']},{label:'Extended AI',values:['Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity','Claude','Meta AI','Copilot']}]
 const channels=channelGroups.flatMap(group=>group.values)
 
 export default function MeasurementForm({questionId,question,projectId,initialChannel}:Props){

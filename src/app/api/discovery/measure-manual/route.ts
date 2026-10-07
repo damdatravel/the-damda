@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
 import {cookies} from 'next/headers'
 
-const channels=new Set(['ChatGPT','Google Search','Naver Search','Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity','Claude','Copilot'])
+const channels=new Set(['ChatGPT','Google Search','Naver Search','Naver AI Briefing','Naver AI Shopping','Google AI','Perplexity','Claude','Meta AI','Copilot'])
 
 export async function POST(req:Request){
  try{
