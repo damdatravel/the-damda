@@ -3,6 +3,7 @@ import {cookies} from 'next/headers'
 import {createClient} from '@supabase/supabase-js'
 import {VERIFIED_COOKIE,unpack,pack,cleanPhone} from '@/lib/consultingSms'
 import {inspectWebsite} from '@/lib/websiteInspection'
+import {validSearchGoal,cleanSearchGoal} from '@/lib/engagement'
 import {summarizeDiagnosis} from '@/lib/publicDiagnosis'
 export const maxDuration=120
 const CHECK='damda_public_diagnosis'
@@ -31,12 +32,15 @@ export async function POST(req:Request){
    return NextResponse.json({ok:true})
   }
   if(b.privacyConsent!==true)return NextResponse.json({error:'사전 진단을 위한 개인정보 이용에 동의해 주세요.'},{status:400})
+  const company=String(b.company_name||'').trim(),industry=String(b.industry||'').trim()
+  if(!company||company.length>100||industry.length>100||!validSearchGoal(b.search_goal))return NextResponse.json({error:'업체명·서비스·검색 상황·희망 채널을 확인해 주세요.'},{status:400})
+  const context={company_name:company,industry,search_goal:cleanSearchGoal(b.search_goal)}
   const count=await s.from('discovery_public_diagnoses').select('id',{count:'exact',head:true}).eq('phone',phone).gte('created_at',new Date(Date.now()-86400000).toISOString())
   if(count.error)throw Error('DATABASE')
   if((count.count||0)>=3)return NextResponse.json({error:'하루에 최대 3회까지 진단할 수 있습니다.'},{status:429})
-  const snapshot=await inspectWebsite(String(b.url||''))
+  const snapshot={...await inspectWebsite(String(b.url||'')),intakeContext:context}
   if(!snapshot.pageCount)return NextResponse.json({error:'확인 가능한 공개 페이지가 없습니다.'},{status:422})
-  const saved=await s.from('discovery_public_diagnoses').insert({phone,website_url:snapshot.website,snapshot,retained_until:new Date(Date.now()+(b.retentionConsentVersion===2?90:1)*86400000).toISOString()}).select('id').single()
+  const saved=await s.from('discovery_public_diagnoses').insert({phone,website_url:snapshot.website,snapshot,intake_context:context,public_receipt_agreed:b.public_receipt_agreed===true,retained_until:new Date(Date.now()+(b.retentionConsentVersion===2?90:1)*86400000).toISOString()}).select('id').single()
   if(saved.error)throw Error('DATABASE')
   const out=NextResponse.json({ok:true,result:summarizeDiagnosis(snapshot),website:snapshot.website,id:saved.data.id})
   out.cookies.set(CHECK,pack({id:saved.data.id,phone,exp:Date.now()+86400000}),{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/',maxAge:86400})
