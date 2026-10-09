@@ -41,3 +41,10 @@ assert.equal(e.validSearchGoal({...goal.search,situation:Array(6).fill('검색 �
 assert.equal(e.validSearchGoal({...goal.search,examples:Array(6).fill('추천해줘').join('\n')}),false)
 assert.equal(e.validSearchGoal({...goal.search,service:'a'.repeat(121)}),false)
 console.log('Passed: server enforces five entries and individual entry length.')
+const discussed={...goal,priorityDiscussion:{customer:'공항 배송 추천',proposal:'영종도 배송부터 검증',reason:'초기 측정과 서비스 지역 확인',agreed:false}}
+assert.throws(()=>e.applyEngagement(e.emptyEngagement(),{action:'goal',goal:discussed},now,'priority1'),/고객 희망/)
+const priority=e.applyEngagement(e.emptyEngagement(),{action:'goal',goal:{...discussed,priorityDiscussion:{...discussed.priorityDiscussion,agreed:true}}},now,'priority1')
+assert.match(e.goalReport(priority.goals),/담다 제안 우선 목표/)
+assert.throws(()=>e.applyEngagement(priority,{action:'goal',goal:{...priority.goals[0],priorityDiscussion:{...priority.goals[0].priorityDiscussion,proposal:'다른 제안'}}},now,'unused'),/내용을 변경/)
+assert.throws(()=>e.applyEngagement(e.emptyEngagement(),{action:'goal',goal:{...discussed,search:{...goal.search,service:'배송\n보관'},priorityDiscussion:{...discussed.priorityDiscussion,agreed:true}}},now,'priority2'),/한 가지/)
+console.log('Passed: priority agreement, one active target, renewed agreement after edits, report projection.')
