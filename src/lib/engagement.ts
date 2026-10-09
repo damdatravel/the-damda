@@ -1,6 +1,10 @@
 export type SearchGoal={service:string;customer:string;situation:string;area:string;channels:string[];examples:string}
 export const emptySearchGoal:SearchGoal={service:'',customer:'',situation:'',area:'',channels:[],examples:''}
-export function validSearchGoal(g:any){return !!g&&['service','customer','situation','area','examples'].every(k=>typeof g[k]==='string'&&g[k].length<=2000)&&Array.isArray(g.channels)&&g.channels.length>0&&g.channels.length<=2&&new Set(g.channels).size===g.channels.length&&g.channels.every((x:any)=>['AI','Naver'].includes(x))&&!!g.service.trim()&&!!g.situation.trim()}
+export const MAX_SEARCH_ITEMS=5
+export const searchItemLimits={service:120,situation:300,examples:170} as const
+export function searchItems(value:string){return value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)}
+export function validSearchItems(value:string,key:keyof typeof searchItemLimits){const items=searchItems(value);return items.length<=MAX_SEARCH_ITEMS&&items.every(x=>x.length<=searchItemLimits[key])}
+export function validSearchGoal(g:any){return !!g&&['service','customer','situation','area','examples'].every(k=>typeof g[k]==='string'&&g[k].length<=2000)&&(['service','situation','examples'] as const).every(k=>validSearchItems(g[k],k))&&Array.isArray(g.channels)&&g.channels.length>0&&g.channels.length<=2&&new Set(g.channels).size===g.channels.length&&g.channels.every((x:any)=>['AI','Naver'].includes(x))&&!!g.service.trim()&&!!g.situation.trim()}
 export function cleanSearchGoal(g:SearchGoal):SearchGoal{return{service:g.service.trim(),customer:g.customer.trim(),situation:g.situation.trim(),area:g.area.trim(),channels:g.channels,examples:g.examples.trim()}}
 export const goalStatuses={draft:'목표 초안',active:'진행 중',achieved:'달성',partial:'부분 달성',unmet:'미달성',paused:'보류',stopped:'종료'} as const
 export type Goal={id:string;sequence:number;search:SearchGoal;baseline:string;workCriteria:string;resultCriteria:string;reviewDate:string;agreement:string;agreementDate:string;status:keyof typeof goalStatuses;result:string;reviewAgreement:string;reviewAgreementDate:string;workComplete:boolean;knownCause:string;hypothesis:string;responsePlan:string;nextReviewDate:string;decision:'continue'|'adjust'|'stop';history:any[]}
