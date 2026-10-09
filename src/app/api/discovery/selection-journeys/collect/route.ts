@@ -1,3 +1,6 @@
+import {projectEngagement} from '../../../../../lib/engagementStore'
+import {goalSnapshot,confirmedGoal} from '../../../../../lib/discovery/goalProgress'
+import {sameGoalSnapshot} from '../../../../../lib/questionReview'
 import {cookies} from 'next/headers'
 import {NextResponse} from 'next/server'
 import {createClient} from '@supabase/supabase-js'
@@ -10,6 +13,7 @@ export async function POST(req:Request){try{
  const b=await req.json(),j=b.journey,index=b.index,id=Number(b.projectId)
  if(!Number.isSafeInteger(id)||id<1||!Number.isInteger(index)||index<0||index>=j?.steps?.length||!['OpenAI API','Gemini API'].includes(j?.channel)||!validateJourney({...j,reviewed:false,steps:j.steps.map((s:any)=>({...s,answer:s.answer||'수집 대기'}))})||j.steps.slice(0,index).some((s:any)=>!s.answer.trim()))return NextResponse.json({error:'채널·질문 순서·원본을 확인해 주세요.'},{status:400})
  const s=createClient(url,secret),p=await s.from('discovery_projects').select('ai_management').eq('id',id).single();if(p.error||!p.data?.ai_management)return NextResponse.json({error:'AI 관리 프로젝트가 필요합니다.'},{status:403})
+ if(j.goalSnapshot){const e=await projectEngagement(s,id);if(!confirmedGoal(e)||!sameGoalSnapshot(j.goalSnapshot,goalSnapshot(e)))return NextResponse.json({error:'목표가 변경되었습니다. 현재 합의 목표를 다시 연결해 주세요.'},{status:409})}
  const open=j.channel==='OpenAI API',key=open?process.env.OPENAI_API_KEY:process.env.GEMINI_API_KEY,model=open?'gpt-5.5':'gemini-3.5-flash';if(!key)return NextResponse.json({error:'선택 채널의 API 키를 설정해 주세요.'},{status:503})
  // Only explicit measurement conditions and questions are sent; never inject the target as a recommendation instruction.
  const turns=j.steps.slice(0,index+1).flatMap((x:any,i:number)=>[{role:'user',text:(i===0&&j.conditions?`이용 조건: ${j.conditions}\n`:'')+x.question},...(i<index?[{role:'assistant',text:x.answer}]:[])])
