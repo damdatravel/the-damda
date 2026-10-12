@@ -4,7 +4,7 @@ import {createClient} from '@supabase/supabase-js'
 import {VERIFIED_COOKIE,unpack,pack,cleanPhone} from '@/lib/consultingSms'
 import {inspectWebsite} from '@/lib/websiteInspection'
 import {validSearchGoal,cleanSearchGoal} from '@/lib/engagement'
-import {summarizeDiagnosis} from '@/lib/publicDiagnosis'
+import {summarizeDiagnosis,diagnosisEmailHtml} from '@/lib/publicDiagnosis'
 export const maxDuration=120
 const CHECK='damda_public_diagnosis'
 export async function POST(req:Request){
@@ -26,7 +26,7 @@ export async function POST(req:Request){
    if(claim.error)throw Error('DATABASE')
    if(!claim.data)return NextResponse.json({error:'이미 발송을 요청했거나 진단이 만료되었습니다.'},{status:409})
    const d=summarizeDiagnosis(claim.data.snapshot)
-   const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`diagnosis-${state.id}`},body:JSON.stringify({from:process.env.DIAGNOSIS_EMAIL_FROM,to:[email],subject:'담다 디스커버리 홈페이지 사전 진단',text:[claim.data.website_url,d.summary,...d.findings,'우선 점검 사항',...d.priorities,d.notice,'상담 신청: https://www.the-damda.co.kr/ai-search/consulting'].join('\n\n')}),signal:AbortSignal.timeout(15000)}).catch(()=>null)
+   const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`diagnosis-${state.id}`},body:JSON.stringify({from:process.env.DIAGNOSIS_EMAIL_FROM,to:[email],subject:'담다 디스커버리 홈페이지 사전 진단',html:diagnosisEmailHtml(d,claim.data.website_url,claim.data.snapshot?.intakeContext?.company_name||''),text:[claim.data.website_url,d.reportText,'상담 신청: https://www.the-damda.co.kr/ai-search/consulting'].join('\n\n')}),signal:AbortSignal.timeout(15000)}).catch(()=>null)
    await s.from('discovery_public_diagnoses').update({email_status:r?.ok?'sent':'failed'}).eq('id',state.id)
    if(!r?.ok)return NextResponse.json({error:'이메일을 발송하지 못했습니다. 화면의 결과는 그대로 확인할 수 있습니다.'},{status:502})
    return NextResponse.json({ok:true})
