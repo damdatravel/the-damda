@@ -7,6 +7,7 @@ const contextual=s.summarizeDiagnosis({pages:[{title:'서비스',description:'�
 assert.match(contextual.priorities[0],/고객이 먼저 알리고 싶은 서비스/);assert.match(contextual.priorities[1],/검토할 고객 검색 상황/);assert.match(contextual.priorities[2],/본 상담에서 확인/);assert.equal(contextual.checks.length,4);assert.match(contextual.reportText,/ページ別|페이지별/);assert.match(result.checks[3].direction,/충분성/);assert.match(result.checks[2].direction,/판단할 수는 없습니다/)
 const html=s.diagnosisEmailHtml(contextual,'https://example.com/?x=<script>','<img src=x onerror=alert(1)>')
 assert.match(html,/진단 요약/);assert.match(html,/페이지별 확인 근거/);assert.match(html,/&lt;img/);assert(!html.includes('<script>'));assert(!html.includes('<img src=x'));assert.match(html,/https:\/\/www.the-damda.co.kr\/ai-search\/consulting/)
+assert.match(s.diagnosisEmailHtml(contextual,'https://example.com','업체','https://www.the-damda.co.kr/ai-search/consulting?prefill=test'),/prefill=test/);
 let calls=0
 const p=load('src/lib/publicWebsiteFetch.ts',{fetch:async()=>{calls++;return {status:302,headers:new Headers({location:'http://127.0.0.1/admin'}),body:{cancel:async()=>{}}}},Headers})
 for(const ip of ['127.0.0.1','10.0.0.1','192.168.1.2','169.254.169.254','172.16.0.1','100.64.0.1','::1','::ffff:127.0.0.1','fd00::1'])assert(p.privateAddress(ip),ip)

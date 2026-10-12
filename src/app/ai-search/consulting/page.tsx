@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import ConsultingForm from './ConsultingForm'
 
 export const metadata: Metadata = {
+ referrer: 'no-referrer',
  title:'검색·AI 발견 관리 상담 | 주식회사 더담다',
  description:'홈페이지와 기본 정보를 남겨주시면 검색과 AI에서의 현재 발견 상태를 확인하는 것부터 시작합니다.',
  alternates:{canonical:'https://the-damda.co.kr/ai-search/consulting'},
