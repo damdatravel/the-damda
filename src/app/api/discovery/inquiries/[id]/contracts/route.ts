@@ -19,8 +19,9 @@ export async function POST(req:Request,{params}:{params:{id:string}}){
  let row:any
  if(body.action==='send'){
  const saved=await s.from('discovery_quotations').select('document').eq('inquiry_id',id).maybeSingle();if(saved.error||!saved.data)return NextResponse.json({error:'견적서와 계약 초안을 먼저 저장하세요.'},{status:400});const q=saved.data.document,issues=contractIssues(q);if(issues.length)return NextResponse.json({error:issues.join(' / ')},{status:400})
- const seal=q.contractDraft.sealPreview?'data:image/png;base64,'+(await readFile(path.join(process.cwd(),'private-assets/company-seal.png'))).toString('base64'):null
- const snapshot={version:CONTRACT_VERSION,quote:q,text:contractText(q),seal},r=await s.from('discovery_contracts').insert({inquiry_id:id,snapshot,snapshot_hash:contractHash(snapshot),recipient_email:q.email.trim(),recipient_phone:cleanPhone(q.phone),expires_at:new Date(Date.now()+7*86400000).toISOString(),provider_user_id:user.id}).select('*').single()
+ const seal='data:image/png;base64,'+(await readFile(path.join(process.cwd(),'private-assets/company-seal.png'))).toString('base64')
+ const logo='data:image/png;base64,'+(await readFile(path.join(process.cwd(),'public/images/damda-discovery-contract-logo.png'))).toString('base64')
+ const snapshot={version:CONTRACT_VERSION,quote:q,text:contractText(q),seal,logo},r=await s.from('discovery_contracts').insert({inquiry_id:id,snapshot,snapshot_hash:contractHash(snapshot),recipient_email:q.email.trim(),recipient_phone:cleanPhone(q.phone),expires_at:new Date(Date.now()+7*86400000).toISOString(),provider_user_id:user.id}).select('*').single()
  if(r.error)return NextResponse.json({error:r.error.code==='23505'?'이미 서명 대기 계약이 있습니다. 기존 계약을 확인하거나 취소한 뒤 새로 발송하세요.':'계약 저장 설정을 확인하세요. discovery_contracts.sql 실행이 필요합니다.'},{status:409});row=r.data
  }else{
  const r=await s.from('discovery_contracts').select('*').eq('inquiry_id',id).eq('id',body.contractId).maybeSingle();if(r.error||!r.data)return NextResponse.json({error:'계약 조회 실패'},{status:404});row=r.data
