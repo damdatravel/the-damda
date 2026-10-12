@@ -12,5 +12,5 @@ export async function GET(req:Request){
  if(auth.error||!auth.data.user)return NextResponse.json({error:'직원 로그인이 필요합니다.'},{status:401})
  const {data,error}=await createClient(url,key).from('discovery_measurements').select('created_at').eq('project_id',projectId).order('created_at',{ascending:true}).limit(1)
  if(error)return NextResponse.json({error:'측정 일정 조회 실패'},{status:500})
- return NextResponse.json({cycle:measurementCycle((data||[]).map(x=>x.created_at)),hasMeasurements:!!data?.length})
+ return NextResponse.json({cycle:measurementCycle((data||[]).map(x=>x.created_at)),hasMeasurements:!!data?.length,channels:{openai:!!process.env.OPENAI_API_KEY,gemini:!!process.env.GEMINI_API_KEY,naver:!!(process.env.NAVER_CLIENT_ID&&process.env.NAVER_CLIENT_SECRET),perplexity:!!process.env.PERPLEXITY_API_KEY,claude:!!process.env.ANTHROPIC_API_KEY,meta:!!process.env.META_API_KEY}})
 }

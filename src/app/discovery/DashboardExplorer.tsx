@@ -27,11 +27,11 @@ export default function DashboardExplorer({projectId,projectName,measurements,be
    try{
     const r=await staffFetch('/api/discovery/improvement-workflow?projectId='+projectId,{cache:'no-store'}),j=await r.json()
     if(!r.ok)throw Error(j.error||'조회 실패')
-    // Count with the same queue rule as the work list, including legacy browser candidates.
-    const batches=[...(j.batches||[]),{sourceId:0,sourceRound:'Day 0',createdAt:'',tasks:legacy}]
+    // Current server queue only; old browser drafts are retained separately.
+    const batches=j.batches||[]
     if(!disposed)setReviewCount(workQueue(batches).counts.pending)
     try{const org=await staffFetch('/api/discovery/organize-tasks?projectId='+projectId,{cache:'no-store'}),data=await org.json();if(!disposed){setOrganizationCount(org.ok&&data.current?data.organization.groups.length:null);setOrganizationOriginal(data.candidates?.length||0)}}catch{if(!disposed)setOrganizationCount(null)}
-   }catch{if(!disposed){setOrganizationCount(null);setReviewCount(workQueue([{sourceId:0,createdAt:'',tasks:legacy}]).counts.pending)}}
+   }catch{if(!disposed){setOrganizationCount(null);setReviewCount(0)}}
   }
   sync();window.addEventListener('task-organization-change',sync);window.addEventListener('goal-links-change',sync);window.addEventListener('discovery-review-change',sync);window.addEventListener('improvement-workflow-change',sync)
   return()=>{disposed=true;window.removeEventListener('task-organization-change',sync);window.removeEventListener('goal-links-change',sync);window.removeEventListener('discovery-review-change',sync);window.removeEventListener('improvement-workflow-change',sync)}

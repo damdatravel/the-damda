@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('fs'),ts=require('typescript'),vm=require('vm')
+const m={exports:{}}
+const readWorkflow=rows=>rows.find(x=>x.kind==='improvement-workflow')?.workflow||null
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/discovery/taskReconciliation.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:m,exports:m.exports,require:n=>n==='node:crypto'?require(n):n.includes('evidence')?{attachWorkflow:(rows,w)=>[...rows.filter(x=>x.kind!=='improvement-workflow'),w]}:{readWorkflow},fetch,AbortSignal,process})
+const x=m.exports,t=(id,status)=>({id,title:id,action:id,reason:'evidence',status}),rows=[{id:1,measurement_round:'Day 0',observed:[{kind:'measurements',measurements:[{id:77}]},{kind:'improvement-workflow',workflow:{revision:1,tasks:[t('old','approved'),t('duplicate','pending'),t('new','pending'),t('verify','pending')]}}]}],records=x.taskRecords(rows),d=[{key:'1:duplicate',targetKey:'1:old',relation:'in_progress',reason:'same work'},{key:'1:new',targetKey:null,relation:'new',reason:'new change'},{key:'1:verify',targetKey:null,relation:'new',reason:'check applied page'}],signature=x.reconciliationSignature(records)
+assert(x.validDecisions(d,records));assert(!x.validDecisions(d.slice(1),records));assert(!x.validDecisions([...d,{...d[0]}],records));assert(!x.validDecisions([{...d[0],relation:'completed'},...d.slice(1)],records))
+const otherScope=records.map(r=>r.key==='1:old'?{...r,scope:'naver'}:r);assert(!x.validDecisions(d,otherScope));
+const before=JSON.stringify(rows),p=x.projectReconciliation(rows,{signature,decisions:d},records);assert.equal(p.links.length,1);assert.equal(readWorkflow(p.rows[0].observed).tasks.length,3);assert.equal(JSON.stringify(rows),before);assert.equal(p.rows[0].observed[0].measurements[0].id,77)
+records[0].task.status='applied';assert.equal(x.projectReconciliation(rows,{signature,decisions:d},records).current,false)
+const cyclic=[{...d[0],relation:'duplicate',targetKey:'1:new'},{...d[1],relation:'duplicate',targetKey:'1:duplicate'},d[2]];assert(!x.validDecisions(cyclic,records))
+const legacy=x.taskRecords([], [{id:4,title:'done',status:'effect_confirmed',work_details:'page'}]);assert.equal(legacy[0].task.status,'reviewed')
+console.log('Passed: full coverage, valid status and scope, original evidence retention, stale plan rejection, cycle prevention, legacy completed mapping.')
