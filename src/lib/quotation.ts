@@ -1,6 +1,7 @@
 export const quoteStatuses={draft:'초안',sent:'전달',negotiating:'협의 중',accepted:'수락',closed:'종료'}
 export type QuoteLine={name:string;kind:'initial'|'monthly'|'extra';quantity:number;price:number}
-export type Quotation={number:string;date:string;validUntil:string;customer:string;contact:string;phone:string;email:string;website:string;ai:boolean;naver:boolean;situation:string;priorities:string;purpose:string;websites:number;queries:number;channels:string[];frequency:string;reportFrequency:string;consultation:string;startDate:string;months:number;scope:string;cooperation:string;payment:string;notes:string;vat:boolean;status:keyof typeof quoteStatuses;lines:QuoteLine[]}
+export type ContractDraft={customerType:'individual'|'corporate';businessNumber:string;representative:string;signer:string;position:string;authority:'representative'|'delegate';authorityEvidence:string;publishing:boolean;media:string;usage:string;revenue:string;afterEnd:string;termination:string;authentication:'basic'|'identity';sealPreview:boolean}
+export type Quotation={contractDraft?:ContractDraft;number:string;date:string;validUntil:string;customer:string;contact:string;phone:string;email:string;website:string;ai:boolean;naver:boolean;situation:string;priorities:string;purpose:string;websites:number;queries:number;channels:string[];frequency:string;reportFrequency:string;consultation:string;startDate:string;months:number;scope:string;cooperation:string;payment:string;notes:string;vat:boolean;status:keyof typeof quoteStatuses;lines:QuoteLine[]}
 export const quotationChannels=['네이버 AI 브리핑 화면 확인','네이버 쇼핑 AI 화면 확인','네이버 웹문서','네이버 블로그','네이버 카페','네이버 지역','네이버 쇼핑','네이버 검색어 트렌드','Gemini API','OpenAI API','Perplexity API','Claude API','Meta Model API','Meta AI 화면 확인','ChatGPT 수동 확인','구글 검색 수동 확인']
 export function channelAllowed(channel:string,scope:{ai:boolean;naver:boolean}){return quotationChannels.includes(channel)&&(channel.startsWith('네이버')?scope.naver:scope.ai)}
 export function changeQuoteServices(q:Quotation,ai:boolean,naver:boolean):Quotation{
@@ -22,6 +23,7 @@ export function validateQuotation(value:unknown):value is Quotation{
  if(typeof q.ai!=='boolean'||typeof q.naver!=='boolean'||(!q.ai&&!q.naver)||typeof q.vat!=='boolean'||!Object.hasOwn(quoteStatuses,q.status))return false
  if(![q.websites,q.queries,q.months].every(n=>Number.isSafeInteger(n)&&n>=1&&n<=1000))return false
  if(!Array.isArray(q.channels)||q.channels.length>20||q.channels.some(x=>typeof x!=='string'||x.length>100))return false
+ if(q.contractDraft){const d=q.contractDraft;if(typeof d!=='object'||!['individual','corporate'].includes(d.customerType)||!['representative','delegate'].includes(d.authority)||!['basic','identity'].includes(d.authentication)||typeof d.publishing!=='boolean'||typeof d.sealPreview!=='boolean'||['businessNumber','representative','signer','position','authorityEvidence','media','usage','revenue','afterEnd','termination'].some(k=>typeof (d as any)[k]!=='string'||(d as any)[k].length>10000))return false}
  if(!Array.isArray(q.lines)||!q.lines.length||q.lines.length>30)return false
  return q.lines.every(x=>x&&typeof x.name==='string'&&x.name.trim().length>0&&x.name.length<=200&&['initial','monthly','extra'].includes(x.kind)&&Number.isSafeInteger(x.quantity)&&x.quantity>=1&&x.quantity<=1000&&Number.isSafeInteger(x.price)&&x.price>=0&&x.price<=100000000)
 }

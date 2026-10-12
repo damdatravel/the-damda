@@ -22,7 +22,7 @@ export function unpack<T>(value?:string):T|null{
 }
 export function otpHash(phone:string,code:string){return sign(phone+':'+code)}
 export function randomOtp(){return crypto.randomInt(100000,1000000).toString()}
-export async function sendSolapiSms(to:string,code:string){
+export async function sendSolapiSms(to:string,code:string,purpose='상담 신청'){
  const apiKey=process.env.SOLAPI_API_KEY, apiSecret=process.env.SOLAPI_API_SECRET
  const from=(process.env.SOLAPI_SENDER_NUMBER||'').replace(/\D/g,'')
  if(!apiKey||!apiSecret||!from)throw new Error('SOLAPI_CONFIG')
@@ -30,7 +30,7 @@ export async function sendSolapiSms(to:string,code:string){
  const signature=crypto.createHmac('sha256',apiSecret).update(date+salt).digest('hex')
  const r=await fetch('https://api.solapi.com/messages/v4/send',{
   method:'POST',headers:{'Content-Type':'application/json',Authorization:`HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`},
-  body:JSON.stringify({message:{to,from,text:`[더담다] 상담 신청 인증번호는 ${code}입니다. 3분 안에 입력해 주세요.`}})
+  body:JSON.stringify({message:{to,from,text:`[더담다] ${purpose} 인증번호는 ${code}입니다. 3분 안에 입력해 주세요.`}})
  })
  if(!r.ok)throw new Error('SOLAPI_SEND_'+r.status)
  return r.json().catch(()=>({}))
